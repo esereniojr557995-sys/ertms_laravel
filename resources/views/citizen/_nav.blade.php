@@ -1,5 +1,5 @@
 {{-- resources/views/citizen/_nav.blade.php --}}
-<div class="sidebar-section">Community</div>
+<div class="sb-section">Community</div>
 <a href="{{ route('citizen.dashboard') }}" class="{{ request()->routeIs('citizen.dashboard') ? 'active' : '' }}">
     <i data-lucide="home"></i> Home
 </a>

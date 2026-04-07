@@ -4,17 +4,17 @@
 @section('page-title', 'Operations Dashboard')
 
 @section('sidebar-nav')
-<div class="sidebar-section">Operations</div>
+<div class="sb-section">Operations</div>
 <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
     <i data-lucide="layout-dashboard"></i> Dashboard
 </a>
 <a href="{{ route('admin.incidents') }}" class="{{ request()->routeIs('admin.incidents*') ? 'active' : '' }}">
     <i data-lucide="flame"></i> Incidents
-    @if($stats['active_incidents'] > 0)<span class="badge">{{ $stats['active_incidents'] }}</span>@endif
+    @if($stats['active_incidents'] > 0)<span class="nb">{{ $stats['active_incidents'] }}</span>@endif
 </a>
 <a href="{{ route('admin.resources') }}" class="{{ request()->routeIs('admin.resources*') ? 'active' : '' }}">
     <i data-lucide="package"></i> Resources
-    @if($stats['low_resources'] > 0)<span class="badge">{{ $stats['low_resources'] }}</span>@endif
+    @if($stats['low_resources'] > 0)<span class="nb">{{ $stats['low_resources'] }}</span>@endif
 </a>
 <a href="{{ route('admin.alerts') }}" class="{{ request()->routeIs('admin.alerts*') ? 'active' : '' }}">
     <i data-lucide="bell"></i> Alerts
@@ -28,9 +28,10 @@
 <a href="{{ route('admin.shelters') }}" class="{{ request()->routeIs('admin.shelters*') ? 'active' : '' }}">
     <i data-lucide="map-pin"></i> Shelters
 </a>
-<div class="sidebar-section">Management</div>
-<a href="{{ route('admin.users') }}" class="{{ request()->routeIs('admin.users*') ? 'active' : '' }}">
-    <i data-lucide="users"></i> Users
+<div class="sb-section">Management</div>
+<a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+    <i data-lucide="layout-dashboard"></i> Users
+</a>
 </a>
 <a href="{{ route('admin.reports') }}" class="{{ request()->routeIs('admin.reports') ? 'active' : '' }}">
     <i data-lucide="bar-chart-2"></i> Reports
@@ -44,45 +45,52 @@
 @endsection
 
 @section('content')
+
 {{-- Stat Cards --}}
 <div class="stat-grid">
     <div class="stat-card red">
-        <div class="label">Active Incidents</div>
-        <div class="value" style="color:var(--red)">{{ $stats['active_incidents'] }}</div>
-        <div class="sub">{{ $stats['critical_incidents'] }} critical</div>
+        <div class="sc-icon"><i data-lucide="flame"></i></div>
+        <div class="sc-val">{{ $stats['active_incidents'] }}</div>
+        <div class="sc-label">Active Incidents</div>
+        <div class="sc-sub">{{ $stats['critical_incidents'] }} critical</div>
     </div>
     <div class="stat-card blue">
-        <div class="label">Active Responders</div>
-        <div class="value" style="color:var(--blue)">{{ $stats['active_responders'] }}</div>
-        <div class="sub">on duty now</div>
+        <div class="sc-icon"><i data-lucide="users"></i></div>
+        <div class="sc-val">{{ $stats['active_responders'] }}</div>
+        <div class="sc-label">Active Responders</div>
+        <div class="sc-sub">on duty now</div>
     </div>
     <div class="stat-card green">
-        <div class="label">Total Users</div>
-        <div class="value" style="color:var(--green)">{{ $stats['total_users'] }}</div>
-        <div class="sub">registered accounts</div>
+        <div class="sc-icon"><i data-lucide="user-check"></i></div>
+        <div class="sc-val">{{ $stats['total_users'] }}</div>
+        <div class="sc-label">Total Users</div>
+        <div class="sc-sub">registered accounts</div>
     </div>
     <div class="stat-card yellow">
-        <div class="label">Pending Tasks</div>
-        <div class="value" style="color:var(--yellow)">{{ $stats['pending_tasks'] }}</div>
-        <div class="sub">awaiting action</div>
+        <div class="sc-icon"><i data-lucide="clipboard-list"></i></div>
+        <div class="sc-val">{{ $stats['pending_tasks'] }}</div>
+        <div class="sc-label">Pending Tasks</div>
+        <div class="sc-sub">awaiting action</div>
     </div>
     <div class="stat-card orange">
-        <div class="label">Patients Today</div>
-        <div class="value" style="color:var(--accent)">{{ $stats['patients_today'] }}</div>
-        <div class="sub">intake this shift</div>
+        <div class="sc-icon"><i data-lucide="heart-pulse"></i></div>
+        <div class="sc-val">{{ $stats['patients_today'] }}</div>
+        <div class="sc-label">Patients Today</div>
+        <div class="sc-sub">intake this shift</div>
     </div>
     <div class="stat-card purple">
-        <div class="label">Open Shelters</div>
-        <div class="value" style="color:var(--purple)">{{ $stats['open_shelters'] }}</div>
-        <div class="sub">accepting evacuees</div>
+        <div class="sc-icon"><i data-lucide="home"></i></div>
+        <div class="sc-val">{{ $stats['open_shelters'] }}</div>
+        <div class="sc-label">Open Shelters</div>
+        <div class="sc-sub">accepting evacuees</div>
     </div>
 </div>
 
-<div class="grid-2" style="margin-bottom:20px">
+<div class="grid-2" style="margin-bottom:16px">
     {{-- Recent Incidents --}}
     <div class="card">
         <div class="card-header">
-            <h2><i data-lucide="flame" style="width:15px;height:15px;display:inline;vertical-align:middle;margin-right:6px"></i>Recent Incidents</h2>
+            <h2><i data-lucide="flame"></i> Recent Incidents</h2>
             <a href="{{ route('admin.incidents') }}" class="btn btn-secondary btn-sm">View All →</a>
         </div>
         <div class="table-wrap">
@@ -96,20 +104,20 @@
                     <td>
                         <div style="display:flex;align-items:center;gap:10px">
                             <div class="inc-icon {{ $inc->type }}">
-                                <i data-lucide="{{ $inc->getTypeIcon() }}" style="width:14px;height:14px"></i>
+                                <i data-lucide="{{ $inc->getTypeIcon() }}"></i>
                             </div>
                             <div>
-                                <div style="font-weight:600;font-size:.82rem">{{ $inc->title }}</div>
-                                <div style="font-size:.7rem;color:var(--text-muted)">{{ $inc->location }}</div>
+                                <div style="font-weight:600;font-size:.8rem;color:var(--text-bright)">{{ $inc->title }}</div>
+                                <div style="font-size:.68rem;color:var(--text-muted);margin-top:1px">{{ $inc->location }}</div>
                             </div>
                         </div>
                     </td>
                     <td><span class="badge badge-{{ $inc->severity }}">{{ $inc->severity }}</span></td>
                     <td><span class="badge badge-{{ $inc->status }}">{{ $inc->status }}</span></td>
-                    <td style="color:var(--text-muted);font-size:.75rem">{{ $inc->date_reported->format('M d, H:i') }}</td>
+                    <td style="color:var(--text-muted);font-size:.72rem;font-family:var(--font-mono)">{{ $inc->date_reported->format('M d, H:i') }}</td>
                 </tr>
                 @empty
-                <tr><td colspan="4" class="empty-state"><p>No incidents recorded.</p></td></tr>
+                <tr><td colspan="4"><div class="empty-state"><p>No incidents recorded.</p></div></td></tr>
                 @endforelse
                 </tbody>
             </table>
@@ -119,7 +127,7 @@
     {{-- Recent Alerts --}}
     <div class="card">
         <div class="card-header">
-            <h2><i data-lucide="bell" style="width:15px;height:15px;display:inline;vertical-align:middle;margin-right:6px"></i>Recent Alerts</h2>
+            <h2><i data-lucide="bell"></i> Recent Alerts</h2>
             <a href="{{ route('admin.alerts') }}" class="btn btn-secondary btn-sm">All →</a>
         </div>
         <div class="card-body">
@@ -141,26 +149,29 @@
 {{-- Audit Log --}}
 <div class="card">
     <div class="card-header">
-        <h2><i data-lucide="scroll-text" style="width:15px;height:15px;display:inline;vertical-align:middle;margin-right:6px"></i>Recent Activity Log</h2>
+        <h2><i data-lucide="scroll-text"></i> Recent Activity Log</h2>
         <a href="{{ route('admin.audit_logs') }}" class="btn btn-secondary btn-sm">Full Log →</a>
     </div>
     <div class="table-wrap">
         <table>
-            <thead><tr><th>User</th><th>Action</th><th>Module</th><th>Details</th><th>Time</th></tr></thead>
+            <thead><tr>
+                <th>User</th><th>Action</th><th>Module</th><th>Details</th><th>Time</th>
+            </tr></thead>
             <tbody>
             @forelse($recentLogs as $log)
             <tr>
-                <td style="font-weight:500">{{ $log->user?->name ?? 'System' }}</td>
+                <td style="font-weight:500;color:var(--text-bright)">{{ $log->user?->name ?? 'System' }}</td>
                 <td><span class="badge badge-{{ strtolower($log->action) === 'create' ? 'completed' : (strtolower($log->action) === 'delete' ? 'active' : 'in_progress') }}">{{ $log->action }}</span></td>
-                <td>{{ $log->module }}</td>
-                <td style="color:var(--text-muted);font-size:.75rem;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ $log->details }}</td>
-                <td style="color:var(--text-muted);font-size:.75rem">{{ $log->created_at->diffForHumans() }}</td>
+                <td style="color:var(--text-muted)">{{ $log->module }}</td>
+                <td style="color:var(--text-muted);font-size:.72rem;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ $log->details }}</td>
+                <td style="color:var(--text-muted);font-size:.72rem;font-family:var(--font-mono);white-space:nowrap">{{ $log->created_at->diffForHumans() }}</td>
             </tr>
             @empty
-            <tr><td colspan="5" class="empty-state"><p>No activity recorded.</p></td></tr>
+            <tr><td colspan="5"><div class="empty-state"><p>No activity recorded.</p></div></td></tr>
             @endforelse
             </tbody>
         </table>
     </div>
 </div>
+
 @endsection

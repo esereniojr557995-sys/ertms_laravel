@@ -3,7 +3,7 @@
 @section('page-title','Operations Dashboard')
 
 @section('sidebar-nav')
-<div class="sidebar-section">Operations</div>
+<div class="sb-section">Operations</div>
 <a href="{{ route('commander.dashboard') }}" class="{{ request()->routeIs('commander.dashboard') ? 'active' : '' }}">
     <i data-lucide="layout-dashboard"></i> Dashboard
 </a>
@@ -12,7 +12,7 @@
 </a>
 <a href="{{ route('commander.tasks') }}" class="{{ request()->routeIs('commander.tasks*') ? 'active' : '' }}">
     <i data-lucide="check-square"></i> Tasks
-    @if($pendingTasks > 0)<span class="badge">{{ $pendingTasks }}</span>@endif
+    @if($pendingTasks > 0)<span class="nb">{{ $pendingTasks }}</span>@endif
 </a>
 <a href="{{ route('commander.resources') }}" class="{{ request()->routeIs('commander.resources*') ? 'active' : '' }}">
     <i data-lucide="package"></i> Resources
@@ -37,31 +37,35 @@
 @section('content')
 <div class="stat-grid">
     <div class="stat-card red">
-        <div class="label">My Active Incidents</div>
-        <div class="value" style="color:var(--red)">{{ $myIncidents }}</div>
-        <div class="sub">under command</div>
+        <div class="sc-icon"><i data-lucide="flame"></i></div>
+        <div class="sc-val">{{ $myIncidents }}</div>
+        <div class="sc-label">My Active Incidents</div>
+        <div class="sc-sub">under command</div>
     </div>
     <div class="stat-card yellow">
-        <div class="label">Pending Tasks</div>
-        <div class="value" style="color:var(--yellow)">{{ $pendingTasks }}</div>
-        <div class="sub">awaiting action</div>
+        <div class="sc-icon"><i data-lucide="clipboard-list"></i></div>
+        <div class="sc-val">{{ $pendingTasks }}</div>
+        <div class="sc-label">Pending Tasks</div>
+        <div class="sc-sub">awaiting action</div>
     </div>
     <div class="stat-card blue">
-        <div class="label">Active Team</div>
-        <div class="value" style="color:var(--blue)">{{ $activeTeam }}</div>
-        <div class="sub">responders on duty</div>
+        <div class="sc-icon"><i data-lucide="users"></i></div>
+        <div class="sc-val">{{ $activeTeam }}</div>
+        <div class="sc-label">Active Team</div>
+        <div class="sc-sub">responders on duty</div>
     </div>
     <div class="stat-card orange">
-        <div class="label">Open Patients</div>
-        <div class="value" style="color:var(--accent)">{{ $openPatients }}</div>
-        <div class="sub">on scene / transported</div>
+        <div class="sc-icon"><i data-lucide="heart-pulse"></i></div>
+        <div class="sc-val">{{ $openPatients }}</div>
+        <div class="sc-label">Open Patients</div>
+        <div class="sc-sub">on scene / transported</div>
     </div>
 </div>
 
-<div class="grid-2" style="margin-bottom:20px">
+<div class="grid-2" style="margin-bottom:16px">
     <div class="card">
         <div class="card-header">
-            <h2><i data-lucide="flame" style="width:15px;height:15px;display:inline;vertical-align:middle;margin-right:6px"></i>Recent Incidents</h2>
+            <h2><i data-lucide="flame"></i> Recent Incidents</h2>
             <a href="{{ route('commander.incidents') }}" class="btn btn-secondary btn-sm">View All →</a>
         </div>
         <div class="table-wrap">
@@ -72,16 +76,18 @@
                 <tr>
                     <td>
                         <div style="display:flex;align-items:center;gap:10px">
-                            <div class="inc-icon {{ $inc->type }}"><i data-lucide="{{ $inc->getTypeIcon() }}" style="width:14px;height:14px"></i></div>
+                            <div class="inc-icon {{ $inc->type }}">
+                                <i data-lucide="{{ $inc->getTypeIcon() }}"></i>
+                            </div>
                             <div>
-                                <div style="font-weight:600;font-size:.82rem">{{ $inc->title }}</div>
-                                <div style="font-size:.7rem;color:var(--text-muted)">{{ $inc->location }}</div>
+                                <div style="font-weight:600;font-size:.8rem;color:var(--text-bright)">{{ $inc->title }}</div>
+                                <div style="font-size:.68rem;color:var(--text-muted);margin-top:1px">{{ $inc->location }}</div>
                             </div>
                         </div>
                     </td>
                     <td><span class="badge badge-{{ $inc->severity }}">{{ $inc->severity }}</span></td>
                     <td><span class="badge badge-{{ $inc->status }}">{{ $inc->status }}</span></td>
-                    <td style="color:var(--text-muted);font-size:.75rem">{{ $inc->date_reported->format('M d, H:i') }}</td>
+                    <td style="color:var(--text-muted);font-size:.72rem;font-family:var(--font-mono)">{{ $inc->date_reported->format('M d, H:i') }}</td>
                 </tr>
                 @empty
                 <tr><td colspan="4"><div class="empty-state" style="padding:20px"><p>No incidents.</p></div></td></tr>
@@ -93,17 +99,22 @@
 
     <div class="card">
         <div class="card-header">
-            <h2><i data-lucide="check-square" style="width:15px;height:15px;display:inline;vertical-align:middle;margin-right:6px"></i>My Pending Tasks</h2>
+            <h2><i data-lucide="check-square"></i> My Pending Tasks</h2>
             <a href="{{ route('commander.tasks') }}" class="btn btn-secondary btn-sm">All Tasks →</a>
         </div>
         <div class="card-body">
             @forelse($myTasks as $task)
-            <div style="padding:10px 0;border-bottom:1px solid rgba(48,54,61,.5);display:flex;align-items:flex-start;gap:10px">
-                <div style="width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0;background:{{ $task->priority==='critical'?'var(--red)':($task->priority==='high'?'var(--accent)':($task->priority==='medium'?'var(--yellow)':'var(--green)')) }}"></div>
-                <div style="flex:1">
-                    <div style="font-weight:600;font-size:.82rem">{{ $task->title }}</div>
-                    <div style="font-size:.72rem;color:var(--text-muted)">{{ $task->incident->title }}</div>
-                    @if($task->due_datetime)<div style="font-size:.7rem;color:var(--accent);margin-top:2px"><i data-lucide="clock" style="width:11px;height:11px;display:inline"></i> Due {{ $task->due_datetime->format('M d, H:i') }}</div>@endif
+            <div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:10px">
+                <div style="width:6px;height:6px;border-radius:50%;margin-top:6px;flex-shrink:0;background:{{ $task->priority==='critical'?'var(--red)':($task->priority==='high'?'var(--accent)':($task->priority==='medium'?'var(--yellow)':'var(--green)')) }}"></div>
+                <div style="flex:1;min-width:0">
+                    <div style="font-weight:600;font-size:.8rem;color:var(--text-bright)">{{ $task->title }}</div>
+                    <div style="font-size:.7rem;color:var(--text-muted);margin-top:1px">{{ $task->incident->title }}</div>
+                    @if($task->due_datetime)
+                    <div style="font-size:.68rem;color:var(--accent2);margin-top:3px;display:flex;align-items:center;gap:3px">
+                        <i data-lucide="clock" style="width:10px;height:10px"></i>
+                        Due {{ $task->due_datetime->format('M d, H:i') }}
+                    </div>
+                    @endif
                 </div>
                 <span class="badge badge-{{ $task->priority }}">{{ $task->priority }}</span>
             </div>
@@ -116,14 +127,14 @@
 
 <div class="card">
     <div class="card-header">
-        <h2><i data-lucide="bell" style="width:15px;height:15px;display:inline;vertical-align:middle;margin-right:6px"></i>Recent Alerts</h2>
+        <h2><i data-lucide="bell"></i> Recent Alerts</h2>
         <a href="{{ route('commander.alerts') }}" class="btn btn-secondary btn-sm">All →</a>
     </div>
     <div class="card-body">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         @forelse($recentAlerts as $alert)
-        <div class="alert-row" style="padding:12px;background:var(--surface2);border-radius:6px;border:1px solid var(--border)">
-            <div class="alert-dot {{ $alert->severity }}"></div>
+        <div style="display:flex;align-items:flex-start;gap:9px;padding:11px 12px;background:var(--surface2);border-radius:6px;border:1px solid var(--border)">
+            <div class="alert-dot {{ $alert->severity }}" style="margin-top:5px"></div>
             <div>
                 <div class="alert-title">{{ $alert->title }}</div>
                 <div class="alert-meta">{{ $alert->type }} · {{ $alert->created_at->diffForHumans() }}</div>

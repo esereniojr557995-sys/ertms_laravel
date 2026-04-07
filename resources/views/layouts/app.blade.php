@@ -788,7 +788,7 @@
         </div>
         <div class="sb-brand-text">
             <div class="name">ERTMS</div>
-            <div class="sub">Emergency Response</div>
+            <div class="sc-sub">Emergency Response</div>
         </div>
     </div>
 

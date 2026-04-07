@@ -3,7 +3,7 @@
 @section('page-title','Training & Certification Management')
 
 @section('sidebar-nav')
-<div class="sidebar-section">Operations</div>
+<div class="sb-section">Operations</div>
 <a href="{{ route('admin.dashboard') }}"><i data-lucide="layout-dashboard"></i> Dashboard</a>
 <a href="{{ route('admin.incidents') }}"><i data-lucide="flame"></i> Incidents</a>
 <a href="{{ route('admin.resources') }}"><i data-lucide="package"></i> Resources</a>
@@ -11,7 +11,7 @@
 <a href="{{ route('admin.patients') }}"><i data-lucide="heart-pulse"></i> Medical</a>
 <a href="{{ route('admin.training') }}" class="active"><i data-lucide="graduation-cap"></i> Training</a>
 <a href="{{ route('admin.shelters') }}"><i data-lucide="map-pin"></i> Shelters</a>
-<div class="sidebar-section">Management</div>
+<div class="sb-section">Management</div>
 <a href="{{ route('admin.users') }}"><i data-lucide="users"></i> Users</a>
 <a href="{{ route('admin.reports') }}"><i data-lucide="bar-chart-2"></i> Reports</a>
 <a href="{{ route('admin.audit_logs') }}"><i data-lucide="scroll-text"></i> Audit Logs</a>

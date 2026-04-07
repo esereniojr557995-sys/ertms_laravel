@@ -1,5 +1,6 @@
 {{-- resources/views/responder/_nav.blade.php --}}
-<div class="sidebar-section">Operations</div>
+@section('sidebar-nav')
+<div class="sb-section">Operations</div>
 <a href="{{ route('responder.dashboard') }}" class="{{ request()->routeIs('responder.dashboard') ? 'active' : '' }}">
     <i data-lucide="layout-dashboard"></i> Dashboard
 </a>

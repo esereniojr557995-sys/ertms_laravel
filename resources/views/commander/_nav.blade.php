@@ -1,5 +1,5 @@
 {{-- Shared commander nav partial: resources/views/commander/_nav.blade.php --}}
-<div class="sidebar-section">Operations</div>
+<div class="sb-section">Operations</div>
 <a href="{{ route('commander.dashboard') }}" class="{{ request()->routeIs('commander.dashboard') ? 'active' : '' }}">
     <i data-lucide="layout-dashboard"></i> Dashboard
 </a>
