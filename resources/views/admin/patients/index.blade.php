@@ -29,13 +29,20 @@
 {{-- Triage Summary --}}
 <div class="stat-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:24px">
     @php
-    $triageCounts = $patients->getCollection()->groupBy('triage_level');
-    $triageColors = ['immediate'=>'red','delayed'=>'yellow','minor'=>'green','expectant'=>'purple','deceased'=>''];
+        $triageCounts = $patients->getCollection()->groupBy('triage_level');
+        $triageColors = [
+            'immediate' => 'red',
+            'delayed'   => 'yellow',
+            'minor'     => 'green',
+            'expectant' => 'purple',
+            'deceased'  => '',
+        ];
     @endphp
     @foreach(['immediate','delayed','minor','expectant','deceased'] as $tl)
     <div class="stat-card {{ $triageColors[$tl] ?? '' }}">
         <div class="sc-label">{{ ucfirst($tl) }}</div>
-        <div class="sc-val" style="font-size:1.6rem">{{ $triageCounts[$tl]?->count() ?? 0 }}</div>
+        {{-- FIX: use ->get($tl) instead of [$tl] to safely access a Collection --}}
+        <div class="sc-val" style="font-size:1.6rem">{{ $triageCounts->get($tl)?->count() ?? 0 }}</div>
     </div>
     @endforeach
 </div>

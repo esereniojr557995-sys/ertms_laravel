@@ -68,14 +68,71 @@ class ResponderController extends Controller
     }
 
     // ── Communications (R/W) ──────────────────────────────────────────────
-    public function comms()
+    public function comms(Request $request)
     {
-        $users    = User::where('id','!=',auth()->id())->whereIn('role',['admin','commander','responder'])->get();
-        $messages = Message::where('sender_id', auth()->id())
-            ->orWhere('receiver_id', auth()->id())
-            ->with(['sender','receiver'])
-            ->latest()->take(50)->get();
-        return view('responder.comms.index', compact('users','messages'));
+        $users = User::where('id','!=',auth()->id())
+            ->whereIn('role',['admin','commander','responder'])
+            ->orderBy('name')->get();
+
+        $withUserId = $request->input('with');
+        $withUser   = $withUserId ? User::find($withUserId) : null;
+
+        if ($withUser) {
+            $messages = Message::with(['sender','receiver'])
+                ->where(function($q) use ($withUserId) {
+                    $q->where(function($q2) use ($withUserId) {
+                        $q2->where('sender_id', auth()->id())->where('receiver_id', $withUserId);
+                    })->orWhere(function($q2) use ($withUserId) {
+                        $q2->where('sender_id', $withUserId)->where('receiver_id', auth()->id());
+                    });
+                })->oldest()->take(100)->get();
+            Message::where('sender_id',$withUserId)->where('receiver_id',auth()->id())->where('is_read',false)->update(['is_read'=>true]);
+        } else {
+            $messages = Message::with(['sender','receiver'])
+                ->where(function($q) {
+                    $q->where('sender_id', auth()->id())
+                      ->orWhere('receiver_id', auth()->id())
+                      ->orWhereNull('receiver_id');
+                })->oldest()->take(100)->get();
+        }
+
+        $conversations = [];
+        $myId = auth()->id();
+        $sent = Message::where('sender_id',$myId)->whereNotNull('receiver_id')->pluck('receiver_id');
+        $recv = Message::where('receiver_id',$myId)->pluck('sender_id');
+        foreach ($sent->merge($recv)->unique()->values() as $uid) {
+            $u = User::find($uid);
+            if (!$u) continue;
+            $unread = Message::where('sender_id',$uid)->where('receiver_id',$myId)->where('is_read',false)->count();
+            $last   = Message::where(function($q) use ($uid,$myId){
+                $q->where(function($q2) use ($uid,$myId){$q2->where('sender_id',$myId)->where('receiver_id',$uid);})->orWhere(function($q2) use ($uid,$myId){$q2->where('sender_id',$uid)->where('receiver_id',$myId);});
+            })->latest()->first();
+            $conversations[] = ['user'=>$u,'unread'=>$unread,'last_msg'=>$last?->content,'last_at'=>$last?->created_at->diffForHumans()];
+        }
+
+        return view('responder.comms.index', compact('users','messages','withUser','conversations'));
+    }
+
+    public function fetchMessages(Request $request)
+    {
+        $since      = $request->input('since', 0);
+        $withUserId = $request->input('with');
+        if ($withUserId) {
+            $messages = Message::with(['sender','receiver'])->where('id','>',$since)->where(function($q) use ($withUserId){
+                $q->where(function($q2) use ($withUserId){$q2->where('sender_id',auth()->id())->where('receiver_id',$withUserId);})->orWhere(function($q2) use ($withUserId){$q2->where('sender_id',$withUserId)->where('receiver_id',auth()->id());});
+            })->oldest()->get();
+        } else {
+            $messages = Message::with(['sender','receiver'])->where('id','>',$since)->where(function($q){
+                $q->where('sender_id',auth()->id())->orWhere('receiver_id',auth()->id())->orWhereNull('receiver_id');
+            })->oldest()->get();
+        }
+        return response()->json($messages->map(fn($m)=>[
+            'id'=>$m->id,'sender_id'=>$m->sender_id,'sender_name'=>$m->sender->name,
+            'receiver_id'=>$m->receiver_id,'receiver_name'=>$m->receiver?->name,
+            'channel'=>$m->channel,'content'=>$m->content,
+            'is_mine'=>$m->sender_id===auth()->id(),
+            'time'=>$m->created_at->diffForHumans(),'time_full'=>$m->created_at->format('M d, H:i'),
+        ]));
     }
 
     public function sendMessage(Request $request)
@@ -86,8 +143,13 @@ class ResponderController extends Controller
             'channel'     => 'required|in:internal,radio',
         ]);
         $data['sender_id'] = auth()->id();
-        Message::create($data);
-        return redirect()->back()->with('success','Message sent.');
+        $msg = Message::create($data);
+        if ($request->expectsJson() || $request->ajax()) {
+            $msg->load('sender','receiver');
+            return response()->json(['id'=>$msg->id,'sender_id'=>$msg->sender_id,'sender_name'=>$msg->sender->name,'receiver_id'=>$msg->receiver_id,'receiver_name'=>$msg->receiver?->name,'channel'=>$msg->channel,'content'=>$msg->content,'is_mine'=>true,'time'=>$msg->created_at->diffForHumans(),'time_full'=>$msg->created_at->format('M d, H:i')]);
+        }
+        $with = isset($data['receiver_id']) && $data['receiver_id'] ? '?with='.$data['receiver_id'] : '';
+        return redirect(route('responder.comms').$with);
     }
 
     // ── Mapping (Read) ─────────────────────────────────────────────────────

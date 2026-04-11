@@ -138,9 +138,9 @@ class CommanderController extends Controller
     public function updateResource(Request $request, Resource $resource)
     {
         $data = $request->validate([
-            'status'              => 'required|in:available,in_use,maintenance,depleted',
-            'assigned_incident_id'=> 'nullable|exists:incidents,id',
-            'quantity'            => 'required|integer|min:0',
+            'status'               => 'required|in:available,in_use,maintenance,depleted',
+            'assigned_incident_id' => 'nullable|exists:incidents,id',
+            'quantity'             => 'required|integer|min:0',
         ]);
         $resource->update($data);
         return redirect()->back()->with('success','Resource updated.');
@@ -149,7 +149,7 @@ class CommanderController extends Controller
     // ── Alerts (R/W) ───────────────────────────────────────────────────────
     public function alerts()
     {
-        $alerts   = Alert::with('sender','incident')->latest()->paginate(15);
+        $alerts    = Alert::with('sender','incident')->latest()->paginate(15);
         $incidents = Incident::whereIn('status',['open','active'])->get();
         return view('commander.alerts.index', compact('alerts','incidents'));
     }
@@ -171,14 +171,101 @@ class CommanderController extends Controller
     }
 
     // ── Communications ─────────────────────────────────────────────────────
-    public function comms()
+    public function comms(Request $request)
     {
-        $users    = User::where('id','!=',auth()->id())->get();
-        $messages = Message::where('sender_id', auth()->id())
-            ->orWhere('receiver_id', auth()->id())
-            ->with(['sender','receiver'])
-            ->latest()->take(50)->get();
-        return view('commander.comms.index', compact('users','messages'));
+        // All users except self, for recipient dropdown
+        $users = User::where('id', '!=', auth()->id())
+            ->whereIn('role', ['admin','commander','responder'])
+            ->orderBy('name')
+            ->get();
+
+        // Selected conversation partner (null = group/broadcast view)
+        $withUserId = $request->input('with');
+        $withUser   = $withUserId ? User::find($withUserId) : null;
+
+        // Build message thread:
+        // If viewing a specific user's conversation, show DMs between the two
+        // Otherwise show all messages this user can see (sent, received, or broadcast)
+        if ($withUser) {
+            $messages = Message::with(['sender','receiver'])
+                ->where(function($q) use ($withUserId) {
+                    $q->where(function($q2) use ($withUserId) {
+                        $q2->where('sender_id', auth()->id())
+                           ->where('receiver_id', $withUserId);
+                    })->orWhere(function($q2) use ($withUserId) {
+                        $q2->where('sender_id', $withUserId)
+                           ->where('receiver_id', auth()->id());
+                    });
+                })
+                ->oldest()
+                ->take(100)
+                ->get();
+            // Mark received messages as read
+            Message::where('sender_id', $withUserId)
+                ->where('receiver_id', auth()->id())
+                ->where('is_read', false)
+                ->update(['is_read' => true]);
+        } else {
+            // Group channel: show broadcasts + messages involving this user
+            $messages = Message::with(['sender','receiver'])
+                ->where(function($q) {
+                    $q->where('sender_id', auth()->id())
+                      ->orWhere('receiver_id', auth()->id())
+                      ->orWhereNull('receiver_id'); // broadcasts
+                })
+                ->oldest()
+                ->take(100)
+                ->get();
+        }
+
+        // Sidebar: recent conversations with unread counts
+        $conversations = $this->getConversations();
+
+        return view('commander.comms.index', compact('users','messages','withUser','conversations'));
+    }
+
+    // AJAX endpoint — returns new messages since a given ID
+    public function fetchMessages(Request $request)
+    {
+        $since      = $request->input('since', 0);
+        $withUserId = $request->input('with');
+
+        if ($withUserId) {
+            $messages = Message::with(['sender','receiver'])
+                ->where('id', '>', $since)
+                ->where(function($q) use ($withUserId) {
+                    $q->where(function($q2) use ($withUserId) {
+                        $q2->where('sender_id', auth()->id())->where('receiver_id', $withUserId);
+                    })->orWhere(function($q2) use ($withUserId) {
+                        $q2->where('sender_id', $withUserId)->where('receiver_id', auth()->id());
+                    });
+                })
+                ->oldest()->get();
+        } else {
+            $messages = Message::with(['sender','receiver'])
+                ->where('id', '>', $since)
+                ->where(function($q) {
+                    $q->where('sender_id', auth()->id())
+                      ->orWhere('receiver_id', auth()->id())
+                      ->orWhereNull('receiver_id');
+                })
+                ->oldest()->get();
+        }
+
+        return response()->json($messages->map(function($m) {
+            return [
+                'id'          => $m->id,
+                'sender_id'   => $m->sender_id,
+                'sender_name' => $m->sender->name,
+                'receiver_id' => $m->receiver_id,
+                'receiver_name' => $m->receiver?->name,
+                'channel'     => $m->channel,
+                'content'     => $m->content,
+                'is_mine'     => $m->sender_id === auth()->id(),
+                'time'        => $m->created_at->diffForHumans(),
+                'time_full'   => $m->created_at->format('M d, H:i'),
+            ];
+        }));
     }
 
     public function sendMessage(Request $request)
@@ -189,8 +276,59 @@ class CommanderController extends Controller
             'channel'     => 'required|in:internal,radio,public',
         ]);
         $data['sender_id'] = auth()->id();
-        Message::create($data);
-        return redirect()->back()->with('success','Message sent.');
+        $msg = Message::create($data);
+
+        // Return JSON for AJAX, redirect for regular form
+        if ($request->expectsJson() || $request->ajax()) {
+            $msg->load('sender','receiver');
+            return response()->json([
+                'id'           => $msg->id,
+                'sender_id'    => $msg->sender_id,
+                'sender_name'  => $msg->sender->name,
+                'receiver_id'  => $msg->receiver_id,
+                'receiver_name'=> $msg->receiver?->name,
+                'channel'      => $msg->channel,
+                'content'      => $msg->content,
+                'is_mine'      => true,
+                'time'         => $msg->created_at->diffForHumans(),
+                'time_full'    => $msg->created_at->format('M d, H:i'),
+            ]);
+        }
+
+        $with = $data['receiver_id'] ? '?with='.$data['receiver_id'] : '';
+        return redirect()->route('commander.comms').$with;
+    }
+
+    private function getConversations(): array
+    {
+        // Get unique users who have exchanged messages with current user
+        $myId = auth()->id();
+        $sent = Message::where('sender_id', $myId)->whereNotNull('receiver_id')->pluck('receiver_id');
+        $recv = Message::where('receiver_id', $myId)->pluck('sender_id');
+        $userIds = $sent->merge($recv)->unique()->values();
+
+        $conversations = [];
+        foreach ($userIds as $uid) {
+            $user = User::find($uid);
+            if (!$user) continue;
+            $unread = Message::where('sender_id', $uid)
+                ->where('receiver_id', $myId)
+                ->where('is_read', false)->count();
+            $lastMsg = Message::where(function($q) use ($uid, $myId) {
+                    $q->where(function($q2) use ($uid,$myId){
+                        $q2->where('sender_id',$myId)->where('receiver_id',$uid);
+                    })->orWhere(function($q2) use ($uid,$myId){
+                        $q2->where('sender_id',$uid)->where('receiver_id',$myId);
+                    });
+                })->latest()->first();
+            $conversations[] = [
+                'user'     => $user,
+                'unread'   => $unread,
+                'last_msg' => $lastMsg?->content,
+                'last_at'  => $lastMsg?->created_at->diffForHumans(),
+            ];
+        }
+        return $conversations;
     }
 
     // ── Medical (R/W) ──────────────────────────────────────────────────────
@@ -248,5 +386,3 @@ class CommanderController extends Controller
         return view('commander.reports', compact('incidentsByType','incidentsBySeverity','tasksByStatus','patientsByTriage'));
     }
 }
-
-

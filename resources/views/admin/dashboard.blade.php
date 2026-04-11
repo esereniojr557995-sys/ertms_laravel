@@ -19,6 +19,12 @@
 <a href="{{ route('admin.alerts') }}" class="{{ request()->routeIs('admin.alerts*') ? 'active' : '' }}">
     <i data-lucide="bell"></i> Alerts
 </a>
+
+{{-- Added Communications Link --}}
+<a href="{{ route('admin.comms') }}" class="{{ request()->routeIs('admin.comms*') ? 'active' : '' }}">
+    <i data-lucide="message-square"></i> Communications
+</a>
+
 <a href="{{ route('admin.patients') }}" class="{{ request()->routeIs('admin.patients*') ? 'active' : '' }}">
     <i data-lucide="heart-pulse"></i> Medical
 </a>
@@ -124,7 +130,11 @@
     <div class="card">
         <div class="card-header">
             <h2><i data-lucide="bell"></i> Recent Alerts</h2>
-            <a href="{{ route('admin.alerts') }}" class="btn btn-secondary btn-sm">All →</a>
+            <div style="display:flex; gap:8px;">
+                {{-- Quick Link to Comms added here --}}
+                <a href="{{ route('admin.comms') }}" class="btn btn-secondary btn-sm"><i data-lucide="message-square" style="width:14px; height:14px;"></i></a>
+                <a href="{{ route('admin.alerts') }}" class="btn btn-secondary btn-sm">All →</a>
+            </div>
         </div>
         <div class="card-body">
             @forelse($recentAlerts as $alert)
