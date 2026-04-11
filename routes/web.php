@@ -11,6 +11,7 @@ use App\Http\Controllers\Citizen\CitizenController;
 Route::get('/',  [LoginController::class, 'showLoginForm'])->name('home');
 Route::get('/login',  [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
+Route::post('/register', [LoginController::class, 'register'])->name('register.post');
 Route::post('/logout',[LoginController::class, 'logout'])->name('logout');
 
 // ── Admin ─────────────────────────────────────────────────────────────────

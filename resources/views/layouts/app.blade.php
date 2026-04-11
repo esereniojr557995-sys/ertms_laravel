@@ -53,7 +53,7 @@
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html { font-size: 13px; -webkit-font-smoothing: antialiased; }
+        html { font-size: 17px; -webkit-font-smoothing: antialiased; }
         body {
             font-family: var(--font);
             background: var(--bg);

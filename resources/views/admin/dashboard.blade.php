@@ -29,9 +29,8 @@
     <i data-lucide="map-pin"></i> Shelters
 </a>
 <div class="sb-section">Management</div>
-<a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-    <i data-lucide="layout-dashboard"></i> Users
-</a>
+<a href="{{ route('admin.users') }}" class="{{ request()->routeIs('admin.users*') ? 'active' : '' }}">
+    <i data-lucide="users"></i> Users
 </a>
 <a href="{{ route('admin.reports') }}" class="{{ request()->routeIs('admin.reports') ? 'active' : '' }}">
     <i data-lucide="bar-chart-2"></i> Reports
@@ -46,7 +45,6 @@
 
 @section('content')
 
-{{-- Stat Cards --}}
 <div class="stat-grid">
     <div class="stat-card red">
         <div class="sc-icon"><i data-lucide="flame"></i></div>
@@ -87,7 +85,6 @@
 </div>
 
 <div class="grid-2" style="margin-bottom:16px">
-    {{-- Recent Incidents --}}
     <div class="card">
         <div class="card-header">
             <h2><i data-lucide="flame"></i> Recent Incidents</h2>
@@ -124,7 +121,6 @@
         </div>
     </div>
 
-    {{-- Recent Alerts --}}
     <div class="card">
         <div class="card-header">
             <h2><i data-lucide="bell"></i> Recent Alerts</h2>
@@ -146,7 +142,6 @@
     </div>
 </div>
 
-{{-- Audit Log --}}
 <div class="card">
     <div class="card-header">
         <h2><i data-lucide="scroll-text"></i> Recent Activity Log</h2>
