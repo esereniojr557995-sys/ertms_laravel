@@ -8,6 +8,9 @@
 <a href="{{ route('admin.incidents') }}"><i data-lucide="flame"></i> Incidents</a>
 <a href="{{ route('admin.resources') }}"><i data-lucide="package"></i> Resources</a>
 <a href="{{ route('admin.alerts') }}"><i data-lucide="bell"></i> Alerts</a>
+<a href="{{ route('admin.comms') }}" class="{{ request()->routeIs('admin.comms*') ? 'active' : '' }}">
+    <i data-lucide="message-square"></i> Communications
+</a>
 <a href="{{ route('admin.patients') }}" class="active"><i data-lucide="heart-pulse"></i> Medical</a>
 <a href="{{ route('admin.training') }}"><i data-lucide="graduation-cap"></i> Training</a>
 <a href="{{ route('admin.shelters') }}"><i data-lucide="map-pin"></i> Shelters</a>
