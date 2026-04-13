@@ -1,18 +1,53 @@
 <?php
-// app/Providers/AppServiceProvider.php
+
+
+
 namespace App\Providers;
 
+
+
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Pagination\Paginator;
+
+use Illuminate\Support\Facades\URL;
+
+
 
 class AppServiceProvider extends ServiceProvider
+
 {
-    public function register(): void {}
+
+    /**
+
+     * Register any application services.
+
+     */
+
+    public function register(): void
+
+    {
+
+        //
+
+    }
+
+
+
+    /**
+
+     * Bootstrap any application services.
+
+     */
 
     public function boot(): void
+
     {
-        // Use our custom pagination view
-        Paginator::defaultView('vendor.pagination.custom');
-        Paginator::defaultSimpleView('vendor.pagination.custom');
+
+        if (env('APP_ENV') === 'production') {
+
+            URL::forceScheme('https');
+
+        }
+
     }
+
 }
