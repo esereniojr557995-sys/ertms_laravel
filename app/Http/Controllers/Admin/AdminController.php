@@ -491,7 +491,65 @@ class AdminController extends Controller
         $shelter->update($data);
         return redirect()->route('admin.shelters')->with('success','Shelter updated.');
     }
+    // ── Citizen Reports ────────────────────────────────────────────────────
+    public function citizenReports(Request $request)
+    {
+        $reports = \App\Models\CitizenReport::with('user')
+            ->when($request->status, fn($q) => $q->where('status', $request->status))
+            ->when($request->type,   fn($q) => $q->where('type',   $request->type))
+            ->latest()
+            ->paginate(15);
 
+        return view('admin.citizen_reports.index', compact('reports'));
+    }
+
+    public function updateReportStatus(Request $request, \App\Models\CitizenReport $report)
+    {
+        $data = $request->validate([
+            'status' => 'required|in:pending,acknowledged,resolved,dismissed',
+        ]);
+        $report->update($data);
+        $this->logActivity('UPDATE', 'CitizenReports', $report->id, "Updated report status: {$report->title}");
+        return redirect()->route('admin.citizen_reports')->with('success', 'Report status updated.');
+    }
+
+    public function escalateReport(Request $request, \App\Models\CitizenReport $report)
+    {
+        $data = $request->validate([
+            'severity'     => 'required|in:low,moderate,high,critical',
+            'commander_id' => 'nullable|exists:users,id',
+        ]);
+
+        // Map citizen report type to incident type
+        $typeMap = [
+            'fire'     => 'fire',
+            'flood'    => 'flood',
+            'accident' => 'other',
+            'medical'  => 'medical',
+            'hazard'   => 'hazmat',
+            'other'    => 'other',
+        ];
+
+        $incident = \App\Models\Incident::create([
+            'title'        => $report->title,
+            'type'         => $typeMap[$report->type] ?? 'other',
+            'severity'     => $data['severity'],
+            'location'     => $report->location,
+            'latitude'     => $report->latitude,
+            'longitude'    => $report->longitude,
+            'description'  => $report->description,
+            'status'       => 'open',
+            'reported_by'  => $report->user_id,
+            'commander_id' => $data['commander_id'] ?? null,
+        ]);
+
+        // Mark the citizen report as acknowledged
+        $report->update(['status' => 'acknowledged']);
+
+        $this->logActivity('CREATE', 'Incidents', $incident->id, "Escalated citizen report #{$report->id} to incident: {$incident->title}");
+
+        return redirect()->route('admin.incidents')->with('success', "Report escalated to incident: {$incident->title}");
+    }
     // ── System Settings ────────────────────────────────────────────────────
 
     public function settings()

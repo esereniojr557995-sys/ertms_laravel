@@ -34,6 +34,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::put('/incidents/{incident}',     [AdminController::class, 'updateIncident'])->name('incidents.update');
     Route::delete('/incidents/{incident}',  [AdminController::class, 'destroyIncident'])->name('incidents.destroy');
 
+
+    Route::get('/citizen-reports',                        [AdminController::class, 'citizenReports'])->name('citizen_reports');
+    Route::put('/citizen-reports/{report}/status',        [AdminController::class, 'updateReportStatus'])->name('citizen_reports.update_status');
+    Route::post('/citizen-reports/{report}/escalate',     [AdminController::class, 'escalateReport'])->name('citizen_reports.escalate');
+
     // Resources
     Route::get('/resources',               [AdminController::class, 'resources'])->name('resources');
     Route::post('/resources',              [AdminController::class, 'storeResource'])->name('resources.store');
