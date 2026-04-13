@@ -27,7 +27,11 @@
 
 @section('content')
 <div class="page-header">
-    <div><h1>Audit Logs</h1><div class="breadcrumb">Admin / Audit Logs</div></div>
+    <div>
+        <h1>Audit Logs</h1>
+        <div class="bc">Admin / Audit Logs</div>
+    </div>
+    <div class="status-pill"><div class="dot"></div> System Online</div>
 </div>
 <div class="card">
     <div class="card-header">

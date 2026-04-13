@@ -29,8 +29,11 @@
 
 @section('content')
 <div class="page-header">
-    <div><h1>Resources</h1><div class="breadcrumb">Admin / Resources</div></div>
-    <button class="btn btn-primary" onclick="openModal('modal-add-resource')"><i data-lucide="plus" style="width:14px;height:14px"></i> Add Resource</button>
+    <div>
+        <h1>Resources</h1>
+        <div class="bc">Admin / Resources</div>
+    </div>
+    <div class="status-pill"><div class="dot"></div> System Online</div>
 </div>
 
 @if($lowStock > 0)

@@ -14,6 +14,7 @@
     <a href="{{ route('admin.citizen_reports') }}" class="{{ request()->routeIs('admin.citizen_reports*') ? 'active' : '' }}">
     <i data-lucide="file-text"></i> Citizen Reports
 </a>
+    <a href="{{ route('admin.resources') }}"><i data-lucide="package"></i> Resources</a>
     <a href="{{ route('admin.alerts') }}" class="{{ request()->routeIs('admin.alerts*') ? 'active' : '' }}">
         <i data-lucide="bell"></i> Alerts
     </a>

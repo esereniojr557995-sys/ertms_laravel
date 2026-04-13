@@ -28,11 +28,9 @@
 <div class="page-header">
     <div>
         <h1>Alerts</h1>
-        <div class="breadcrumb">Admin / Alerts</div>
+        <div class="bc">Admin / Alerts</div>
     </div>
-    <button class="btn btn-primary" onclick="openModal('modal-send-alert')">
-        <i data-lucide="send" style="width:14px;height:14px"></i> Send Alert
-    </button>
+    <div class="status-pill"><div class="dot"></div> System Online</div>
 </div>
 
 <div class="card">

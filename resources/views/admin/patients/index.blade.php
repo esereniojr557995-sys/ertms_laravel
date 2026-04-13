@@ -26,10 +26,11 @@
 
 @section('content')
 <div class="page-header">
-    <div><h1>Medical — Patients</h1><div class="breadcrumb">Admin / Medical</div></div>
-    <button class="btn btn-primary" onclick="openModal('modal-add-patient')">
-        <i data-lucide="user-plus" style="width:14px;height:14px"></i> Add Patient
-    </button>
+    <div>
+        <h1>Medical - Patients</h1>
+        <div class="bc">Admin / Medical</div>
+    </div>
+    <div class="status-pill"><div class="dot"></div> System Online</div>
 </div>
 
 {{-- Triage Summary --}}
