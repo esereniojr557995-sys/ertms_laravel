@@ -13,7 +13,7 @@
     @if($stats['active_incidents'] > 0)<span class="nb">{{ $stats['active_incidents'] }}</span>@endif
 </a>
 <a href="{{ route('admin.citizen_reports') }}" class="{{ request()->routeIs('admin.citizen_reports*') ? 'active' : '' }}">
-    <i data-lucide="scroll-text"></i> Citizen Reports
+    <i data-lucide="file-text"></i> Citizen Reports
 </a>
 <a href="{{ route('admin.resources') }}" class="{{ request()->routeIs('admin.resources*') ? 'active' : '' }}">
     <i data-lucide="package"></i> Resources
