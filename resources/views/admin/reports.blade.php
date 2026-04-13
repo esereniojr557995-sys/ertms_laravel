@@ -30,12 +30,9 @@
 
 @section('content')
 <div class="page-header">
-    <div>
-        <h1>Reports</h1>
-        <div class="bc">Admin / Reports</div>
-    </div>
-    <div class="status-pill"><div class="dot"></div> System Online</div>
+    <div><h1>Analytics & Reports</h1><div class="bc">Admin / Reports</div></div>
 </div>
+
 <div class="grid-2" style="margin-bottom:20px">
     <div class="card">
         <div class="card-header"><h2><i data-lucide="pie-chart" style="width:14px;height:14px;display:inline;vertical-align:middle;margin-right:6px"></i>Incidents by Type</h2></div>

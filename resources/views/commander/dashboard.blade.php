@@ -12,7 +12,6 @@
 </a>
 <a href="{{ route('commander.tasks') }}" class="{{ request()->routeIs('commander.tasks*') ? 'active' : '' }}">
     <i data-lucide="check-square"></i> Tasks
-    @if($pendingTasks > 0)<span class="nb">{{ $pendingTasks }}</span>@endif
 </a>
 <a href="{{ route('commander.resources') }}" class="{{ request()->routeIs('commander.resources*') ? 'active' : '' }}">
     <i data-lucide="package"></i> Resources

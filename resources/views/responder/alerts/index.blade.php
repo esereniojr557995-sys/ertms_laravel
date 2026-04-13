@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="page-header">
-    <div><h1>Alerts</h1><div class="breadcrumb">Responder / Alerts</div></div>
+    <div><h1>Alerts</h1><div class="bc">Responder / Alerts</div></div>
 </div>
 <div class="card">
     <div class="table-wrap">

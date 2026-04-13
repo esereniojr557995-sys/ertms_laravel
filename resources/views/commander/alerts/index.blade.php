@@ -5,7 +5,7 @@
 @section('sidebar-nav')@include('commander._nav')@endsection
 @section('content')
 <div class="page-header">
-    <div><h1>Alerts</h1><div class="breadcrumb">Commander / Alerts</div></div>
+    <div><h1>Alerts</h1><div class="bc">Commander / Alerts</div></div>
     <button class="btn btn-primary" onclick="openModal('modal-alert')"><i data-lucide="send" style="width:14px;height:14px"></i> Send Alert</button>
 </div>
 <div class="card">

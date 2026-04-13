@@ -5,7 +5,7 @@
 @section('sidebar-nav')@include('commander._nav')@endsection
 @section('content')
 <div class="page-header">
-    <div><h1>Resources</h1><div class="breadcrumb">Commander / Resources</div></div>
+    <div><h1>Resources</h1><div class="bc">Commander / Resources</div></div>
 </div>
 <div class="card">
     <div class="table-wrap">

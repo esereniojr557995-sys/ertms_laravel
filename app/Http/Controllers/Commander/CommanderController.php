@@ -109,9 +109,17 @@ class CommanderController extends Controller
         $this->logActivity('CREATE','Tasks',null,"Created task: {$data['title']}");
         return redirect()->route('commander.tasks')->with('success','Task created.');
     }
-
-    public function updateTask(Request $request, Task $task)
+        public function updateTask(Request $request, Task $task)
     {
+    // ── Lock: completed tasks cannot be modified ──────────────────────
+    if ($task->status === 'completed') {
+        return redirect()->route('commander.tasks')
+            ->with('error', 'Completed tasks cannot be modified.');
+    }
+       if (in_array($patient->status, ['discharged', 'deceased'])) {
+        return redirect()->route('commander.patients')
+            ->with('error', 'This patient record is locked and cannot be modified.');
+    }
         $data = $request->validate([
             'status'      => 'required|in:pending,in_progress,completed,cancelled',
             'assigned_to' => 'nullable|exists:users,id',

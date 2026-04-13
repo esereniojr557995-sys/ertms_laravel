@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="page-header">
-    <div><h1>Incidents</h1><div class="breadcrumb">Commander / Incidents</div></div>
+    <div><h1>Incidents</h1><div class="bc">Commander / Incidents</div></div>
     <a href="{{ route('commander.incidents.create') }}" class="btn btn-primary"><i data-lucide="plus" style="width:14px;height:14px"></i> New Incident</a>
 </div>
 <div class="card">

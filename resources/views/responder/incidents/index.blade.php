@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="page-header">
-    <div><h1>Incidents</h1><div class="breadcrumb">Responder / Incidents</div></div>
+    <div><h1>Incidents</h1><div class="bc">Responder / Incidents</div></div>
 </div>
 <div class="card">
     <div class="card-header">

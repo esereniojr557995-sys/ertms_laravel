@@ -11,7 +11,7 @@
 
 @section('content')
 <div class="page-header">
-    <div><h1>Live Map</h1><div class="breadcrumb">Commander / Mapping</div></div>
+    <div><h1>Live Map</h1><div class="bc">Commander / Mapping</div></div>
 </div>
 
 <div style="margin-bottom:20px">

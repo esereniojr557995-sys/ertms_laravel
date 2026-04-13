@@ -30,7 +30,9 @@
         <h1>Alerts</h1>
         <div class="bc">Admin / Alerts</div>
     </div>
-    <div class="status-pill"><div class="dot"></div> System Online</div>
+    <button class="btn btn-primary" onclick="openModal('modal-send-alert')">
+        <i data-lucide="send" style="width:14px;height:14px"></i> Send Alert
+    </button>
 </div>
 
 <div class="card">

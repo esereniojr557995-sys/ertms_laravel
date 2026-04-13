@@ -4,7 +4,7 @@
 @section('sidebar-nav')@include('commander._nav')@endsection
 @section('content')
 <div class="page-header">
-    <div><h1>New Incident</h1><div class="breadcrumb">Commander / Incidents / Create</div></div>
+    <div><h1>New Incident</h1><div class="bc">Commander / Incidents / Create</div></div>
     <a href="{{ route('commander.incidents') }}" class="btn btn-secondary"><i data-lucide="arrow-left" style="width:14px;height:14px"></i> Back</a>
 </div>
 <div class="card" style="max-width:720px">

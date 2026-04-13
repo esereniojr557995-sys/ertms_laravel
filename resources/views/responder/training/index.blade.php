@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="page-header">
-    <div><h1>Training</h1><div class="breadcrumb">Responder / Training</div></div>
+    <div><h1>Training</h1><div class="bc">Responder / Training</div></div>
 </div>
 
 <div class="grid-2" style="align-items:start">

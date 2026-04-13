@@ -145,11 +145,7 @@
 
 @section('content')
 <div class="page-header">
-    <div>
-        <h1>System Settings</h1>
-        <div class="bc">Admin / Settings</div>
-    </div>
-    <div class="status-pill"><div class="dot"></div> System Online</div>
+    <div><h1>Settings</h1><div class="bc">Admin / Settings</div></div>
 </div>
 
 <div class="settings-layout">

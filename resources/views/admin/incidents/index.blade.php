@@ -26,11 +26,8 @@
 
 @section('content')
 <div class="page-header">
-    <div>
-        <h1>Incidents</h1>
-        <div class="bc">Admin / Incidents</div>
-    </div>
-    <div class="status-pill"><div class="dot"></div> System Online</div>
+    <div><h1>Incidents</h1><div class="bc">Admin / Incidents</div></div>
+    <a href="{{ route('admin.incidents.create') }}" class="btn btn-primary"><i data-lucide="plus" style="width:14px;height:14px"></i> New Incident</a>
 </div>
 
 <div class="card">

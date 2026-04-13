@@ -9,7 +9,7 @@
 
 @section('content')
 <div class="page-header">
-    <div><h1>Reports</h1><div class="breadcrumb">Commander / Reports</div></div>
+    <div><h1>Reports</h1><div class="bc">Commander / Reports</div></div>
 </div>
 
 <div class="grid-2" style="margin-bottom:20px">
