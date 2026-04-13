@@ -7,6 +7,9 @@
 <div class="sb-section">Operations</div>
 <a href="{{ route('admin.dashboard') }}"><i data-lucide="layout-dashboard"></i> Dashboard</a>
 <a href="{{ route('admin.incidents') }}"><i data-lucide="flame"></i> Incidents</a>
+<a href="{{ route('admin.citizen_reports') }}" class="{{ request()->routeIs('admin.citizen_reports*') ? 'active' : '' }}">
+    <i data-lucide="scroll-text"></i> Citizen Reports
+</a>
 <a href="{{ route('admin.resources') }}"><i data-lucide="package"></i> Resources</a>
 <a href="{{ route('admin.alerts') }}"><i data-lucide="bell"></i> Alerts</a>
 <a href="{{ route('admin.comms') }}" class="{{ request()->routeIs('admin.comms*') ? 'active' : '' }}">

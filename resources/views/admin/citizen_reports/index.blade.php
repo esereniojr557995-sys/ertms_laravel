@@ -27,16 +27,23 @@
     </div>
 </div>
 
-{{-- Summary Stats --}}
+{{-- Summary Stat Cards --}}
 @php
-    $statusCounts = $reports->getCollection()->groupBy('status');
-    $statuses = ['pending' => 'yellow', 'acknowledged' => 'blue', 'resolved' => 'green', 'dismissed' => ''];
+    $allReports   = $reports->getCollection();
+    $statusCounts = $allReports->groupBy('status');
+    $statusConfig = [
+        'pending'      => ['color' => 'yellow', 'icon' => 'clock',        'label' => 'Pending'],
+        'acknowledged' => ['color' => 'blue',   'icon' => 'eye',          'label' => 'Acknowledged'],
+        'resolved'     => ['color' => 'green',  'icon' => 'check-circle', 'label' => 'Resolved'],
+        'dismissed'    => ['color' => '',       'icon' => 'x-circle',     'label' => 'Dismissed'],
+    ];
 @endphp
-<div class="stat-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
-    @foreach($statuses as $status => $color)
-    <div class="stat-card {{ $color }}">
-        <div class="sc-label">{{ ucfirst($status) }}</div>
-        <div class="sc-val" style="font-size:1.6rem">{{ $statusCounts->get($status)?->count() ?? 0 }}</div>
+<div class="stat-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:22px">
+    @foreach($statusConfig as $status => $cfg)
+    <div class="stat-card {{ $cfg['color'] }}">
+        <div class="sc-icon"><i data-lucide="{{ $cfg['icon'] }}" style="width:14px;height:14px"></i></div>
+        <div class="sc-val">{{ $statusCounts->get($status)?->count() ?? 0 }}</div>
+        <div class="sc-label">{{ $cfg['label'] }}</div>
     </div>
     @endforeach
 </div>
@@ -47,13 +54,13 @@
             <select name="status" class="form-control">
                 <option value="">All Status</option>
                 @foreach(['pending','acknowledged','resolved','dismissed'] as $s)
-                <option value="{{ $s }}" {{ request('status')==$s?'selected':'' }}>{{ ucfirst($s) }}</option>
+                <option value="{{ $s }}" {{ request('status')===$s ? 'selected' : '' }}>{{ ucfirst($s) }}</option>
                 @endforeach
             </select>
             <select name="type" class="form-control">
                 <option value="">All Types</option>
                 @foreach(['fire','flood','accident','medical','hazard','other'] as $t)
-                <option value="{{ $t }}" {{ request('type')==$t?'selected':'' }}>{{ ucfirst($t) }}</option>
+                <option value="{{ $t }}" {{ request('type')===$t ? 'selected' : '' }}>{{ ucfirst($t) }}</option>
                 @endforeach
             </select>
             <button class="btn btn-secondary" type="submit">
@@ -80,7 +87,7 @@
             @forelse($reports as $report)
             <tr>
                 <td>
-                    <div style="font-weight:600;color:var(--text-bright)">{{ $report->title }}</div>
+                    <div style="font-weight:600;font-size:.83rem;color:var(--text)">{{ $report->title }}</div>
                     <div style="font-size:.72rem;color:var(--text-muted);margin-top:2px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
                         {{ $report->description }}
                     </div>
@@ -89,20 +96,19 @@
                     <span class="badge badge-info" style="text-transform:capitalize">{{ $report->type }}</span>
                 </td>
                 <td>
-                    <div style="font-size:.82rem;font-weight:500;color:var(--text-bright)">{{ $report->user?->name ?? '—' }}</div>
+                    <div style="font-size:.82rem;font-weight:500;color:var(--text)">{{ $report->user?->name ?? '—' }}</div>
                     <div style="font-size:.7rem;color:var(--text-muted)">{{ $report->user?->email }}</div>
                 </td>
                 <td style="font-size:.78rem;color:var(--text-muted);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
                     {{ $report->location }}
                 </td>
                 <td>
-                    <span class="badge badge-{{
-                        $report->status === 'pending'      ? 'pending' :
-                        ($report->status === 'acknowledged' ? 'in_progress' :
-                        ($report->status === 'resolved'     ? 'completed'   : 'cancelled'))
-                    }}">{{ $report->status }}</span>
+                    @php
+                        $badgeMap = ['pending'=>'pending','acknowledged'=>'in_progress','resolved'=>'completed','dismissed'=>'cancelled'];
+                    @endphp
+                    <span class="badge badge-{{ $badgeMap[$report->status] ?? 'pending' }}">{{ $report->status }}</span>
                 </td>
-                <td style="font-size:.75rem;color:var(--text-muted);font-family:var(--font-mono);white-space:nowrap">
+                <td style="font-size:.75rem;color:var(--text-muted);white-space:nowrap">
                     {{ $report->created_at->diffForHumans() }}
                 </td>
                 <td>
@@ -113,7 +119,7 @@
                         <button class="btn btn-secondary btn-xs" onclick="openModal('status-{{ $report->id }}')">
                             <i data-lucide="pencil" style="width:12px;height:12px"></i> Status
                         </button>
-                        @if($report->status === 'pending' || $report->status === 'acknowledged')
+                        @if(in_array($report->status, ['pending','acknowledged']))
                         <button class="btn btn-primary btn-xs" onclick="openModal('escalate-{{ $report->id }}')">
                             <i data-lucide="flame" style="width:12px;height:12px"></i> Escalate
                         </button>
@@ -122,39 +128,62 @@
                 </td>
             </tr>
 
-            {{-- View Modal --}}
+            {{-- ── View Modal ── --}}
             <div class="modal-backdrop" id="view-{{ $report->id }}">
                 <div class="modal" style="max-width:560px">
                     <div class="modal-header">
-                        <h3>Report: {{ $report->title }}</h3>
+                        <h3>{{ $report->title }}</h3>
                         <button class="modal-close" onclick="closeModal('view-{{ $report->id }}')">
                             <i data-lucide="x"></i>
                         </button>
                     </div>
                     <div class="modal-body">
-                        <div class="detail-row"><span class="dl">Submitted By</span><span class="dv">{{ $report->user?->name ?? '—' }}</span></div>
-                        <div class="detail-row"><span class="dl">Type</span><span class="dv" style="text-transform:capitalize">{{ $report->type }}</span></div>
-                        <div class="detail-row"><span class="dl">Location</span><span class="dv">{{ $report->location }}</span></div>
-                        <div class="detail-row"><span class="dl">Status</span><span class="dv"><span class="badge badge-{{ $report->status==='resolved'?'completed':($report->status==='acknowledged'?'in_progress':($report->status==='dismissed'?'cancelled':'pending')) }}">{{ $report->status }}</span></span></div>
-                        <div class="detail-row"><span class="dl">Submitted</span><span class="dv">{{ $report->created_at->format('M d, Y H:i') }}</span></div>
+                        <div class="detail-row">
+                            <span class="dl">Submitted By</span>
+                            <span class="dv">{{ $report->user?->name ?? '—' }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="dl">Type</span>
+                            <span class="dv" style="text-transform:capitalize">{{ $report->type }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="dl">Location</span>
+                            <span class="dv">{{ $report->location }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="dl">Status</span>
+                            <span class="dv">
+                                <span class="badge badge-{{ $badgeMap[$report->status] ?? 'pending' }}">{{ $report->status }}</span>
+                            </span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="dl">Submitted</span>
+                            <span class="dv">{{ $report->created_at->format('M d, Y H:i') }}</span>
+                        </div>
                         @if($report->latitude && $report->longitude)
-                        <div class="detail-row"><span class="dl">Coordinates</span><span class="dv" style="font-family:var(--font-mono)">{{ $report->latitude }}, {{ $report->longitude }}</span></div>
+                        <div class="detail-row">
+                            <span class="dl">Coordinates</span>
+                            <span class="dv" style="font-family:monospace;font-size:.78rem">{{ $report->latitude }}, {{ $report->longitude }}</span>
+                        </div>
                         @endif
-                        <div style="margin-top:14px">
-                            <div style="font-size:.72rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Description</div>
-                            <div style="font-size:.84rem;color:var(--text);line-height:1.6;background:var(--surface2);padding:10px 12px;border-radius:var(--r-sm);border:1px solid var(--border)">{{ $report->description }}</div>
+                        <div style="margin-top:16px">
+                            <div style="font-size:.67rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.09em;margin-bottom:7px">Description</div>
+                            <div style="font-size:.83rem;color:var(--text);line-height:1.65;background:var(--surface2);padding:12px 14px;border-radius:var(--radius-sm);border:1px solid var(--border)">
+                                {{ $report->description }}
+                            </div>
                         </div>
                         @if($report->photo)
-                        <div style="margin-top:14px">
-                            <div style="font-size:.72rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Attached Photo</div>
-                            <img src="{{ asset('storage/'.$report->photo) }}" style="max-width:100%;border-radius:var(--r-sm);border:1px solid var(--border)">
+                        <div style="margin-top:16px">
+                            <div style="font-size:.67rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.09em;margin-bottom:7px">Attached Photo</div>
+                            <img src="{{ asset('storage/'.$report->photo) }}" alt="Report photo"
+                                 style="max-width:100%;border-radius:var(--radius-sm);border:1px solid var(--border)">
                         </div>
                         @endif
                     </div>
                 </div>
             </div>
 
-            {{-- Update Status Modal --}}
+            {{-- ── Update Status Modal ── --}}
             <div class="modal-backdrop" id="status-{{ $report->id }}">
                 <div class="modal" style="max-width:380px">
                     <div class="modal-header">
@@ -170,20 +199,23 @@
                                 <label>Report Status</label>
                                 <select name="status" class="form-control">
                                     @foreach(['pending','acknowledged','resolved','dismissed'] as $s)
-                                    <option value="{{ $s }}" {{ $report->status===$s?'selected':'' }}>{{ ucfirst($s) }}</option>
+                                    <option value="{{ $s }}" {{ $report->status===$s ? 'selected' : '' }}>{{ ucfirst($s) }}</option>
                                     @endforeach
                                 </select>
                             </div>
-                            <button type="submit" class="btn btn-primary">
-                                <i data-lucide="save" style="width:13px;height:13px"></i> Save
-                            </button>
+                            <div style="display:flex;gap:8px">
+                                <button type="submit" class="btn btn-primary">
+                                    <i data-lucide="save" style="width:13px;height:13px"></i> Save
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="closeModal('status-{{ $report->id }}')">Cancel</button>
+                            </div>
                         </form>
                     </div>
                 </div>
             </div>
 
-            {{-- Escalate to Incident Modal --}}
-            @if($report->status === 'pending' || $report->status === 'acknowledged')
+            {{-- ── Escalate to Incident Modal ── --}}
+            @if(in_array($report->status, ['pending','acknowledged']))
             <div class="modal-backdrop" id="escalate-{{ $report->id }}">
                 <div class="modal" style="max-width:420px">
                     <div class="modal-header">
@@ -193,9 +225,9 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <div class="info-box blue" style="margin-bottom:14px">
-                            <i data-lucide="info"></i>
-                            <div>This will create a new incident from <strong>{{ $report->title }}</strong> and mark the report as acknowledged.</div>
+                        <div class="info-box blue">
+                            <i data-lucide="info" style="width:14px;height:14px;flex-shrink:0"></i>
+                            <div>This will create a new incident from <strong style="color:var(--text)">{{ $report->title }}</strong> and mark the report as acknowledged.</div>
                         </div>
                         <form method="POST" action="{{ route('admin.citizen_reports.escalate', $report) }}">
                             @csrf
@@ -216,9 +248,12 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <button type="submit" class="btn btn-primary">
-                                <i data-lucide="flame" style="width:13px;height:13px"></i> Create Incident
-                            </button>
+                            <div style="display:flex;gap:8px">
+                                <button type="submit" class="btn btn-primary">
+                                    <i data-lucide="flame" style="width:13px;height:13px"></i> Create Incident
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="closeModal('escalate-{{ $report->id }}')">Cancel</button>
+                            </div>
                         </form>
                     </div>
                 </div>
