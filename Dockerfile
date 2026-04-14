@@ -42,46 +42,52 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-# Copy the full Laravel project
+# Copy project files
 COPY . .
 
-# Create a temporary .env from the example so Composer/Artisan can run
-# Real environment variables are injected by Render at runtime
+# FIX 1: Create .env.example if missing, then copy to .env for build-time use
+RUN if [ ! -f .env.example ]; then \
+    printf 'APP_NAME=ERTMS\nAPP_ENV=production\nAPP_KEY=\nAPP_DEBUG=false\nAPP_URL=http://localhost\nDB_CONNECTION=mysql\nDB_HOST=127.0.0.1\nDB_PORT=3306\nDB_DATABASE=ertms\nDB_USERNAME=root\nDB_PASSWORD=\nSESSION_DRIVER=file\nCACHE_STORE=file\nQUEUE_CONNECTION=sync\n' > .env.example; \
+fi
 RUN cp .env.example .env
 
-# Install PHP dependencies (no dev, optimized autoloader)
+# Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Generate a temporary app key so artisan commands work during build
-RUN php artisan key:generate
+# Generate temporary app key for build-time artisan commands
+RUN php artisan key:generate --force
 
-# Install frontend dependencies and compile Vite assets
-RUN npm ci --prefer-offline
+# FIX 2: Use npm install if package-lock.json is missing (npm ci requires it)
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
 RUN npm run build
 
-# Create required storage directories and set permissions
-RUN mkdir -p storage/framework/cache \
+# Create all required Laravel storage directories
+RUN mkdir -p storage/framework/cache/data \
              storage/framework/sessions \
              storage/framework/views \
              storage/app/public \
+             storage/logs \
              bootstrap/cache \
-             public/uploads \
- && chown -R www-data:www-data storage bootstrap/cache public/uploads \
- && chmod -R 775 storage bootstrap/cache public/uploads
+             public/uploads
 
-# Create the public storage symlink
+# FIX 3: Own the entire project directory so www-data can write to storage
+RUN chown -R www-data:www-data /var/www/html \
+ && chmod -R 755 /var/www/html \
+ && chmod -R 775 storage bootstrap/cache
+
+# Create public storage symlink
 RUN php artisan storage:link || true
 
-# Clear config cache — real env vars will be loaded at runtime
+# Clear all caches — real env vars from Render override .env at runtime
 RUN php artisan config:clear \
  && php artisan view:clear \
- && php artisan route:clear
+ && php artisan route:clear \
+ && php artisan cache:clear
 
 EXPOSE 10000
 
-# Use a startup script so we can run migrations + cache at container start
-CMD php artisan config:cache \
- && php artisan route:cache \
- && php artisan view:cache \
- && php artisan migrate --force \
- && apache2-foreground
+# FIX 4: Use a proper bash startup script with set -e so errors are visible
+RUN printf '#!/bin/bash\nset -e\necho "[ERTMS] Caching config..."\nphp artisan config:cache\necho "[ERTMS] Caching routes..."\nphp artisan route:cache\necho "[ERTMS] Caching views..."\nphp artisan view:cache\necho "[ERTMS] Running migrations..."\nphp artisan migrate --force\necho "[ERTMS] Starting Apache..."\nexec apache2-foreground\n' > /start.sh \
+ && chmod +x /start.sh
+
+CMD ["/start.sh"]
