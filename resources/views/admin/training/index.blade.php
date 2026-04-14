@@ -24,6 +24,45 @@
 <a href="{{ route('admin.settings') }}"><i data-lucide="settings"></i> Settings</a>
 @endsection
 
+@push('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+    .flatpickr-calendar {
+        background: var(--surface2) !important;
+        border: 1px solid var(--border2) !important;
+        border-radius: var(--r) !important;
+        box-shadow: 0 16px 40px rgba(0,0,0,.5) !important;
+        font-family: var(--font) !important;
+    }
+    .flatpickr-day { color: var(--text) !important; border-radius: var(--r-sm) !important; }
+    .flatpickr-day:hover { background: var(--surface3) !important; }
+    .flatpickr-day.selected { background: var(--accent) !important; border-color: var(--accent) !important; color: #fff !important; }
+    .flatpickr-day.today { border-color: var(--accent) !important; color: var(--accent2) !important; }
+    .flatpickr-day.flatpickr-disabled { color: var(--text-dim) !important; }
+    .flatpickr-months { background: var(--surface3) !important; border-radius: var(--r) var(--r) 0 0 !important; }
+    .flatpickr-month, .flatpickr-current-month, .flatpickr-monthDropdown-months,
+    .flatpickr-current-month input.cur-year { color: var(--text-bright) !important; fill: var(--text-bright) !important; background: transparent !important; }
+    .flatpickr-weekday { color: var(--text-muted) !important; background: transparent !important; }
+    .flatpickr-weekdays { background: var(--surface3) !important; }
+    .flatpickr-time { background: var(--surface3) !important; border-top: 1px solid var(--border) !important; border-radius: 0 0 var(--r) var(--r) !important; }
+    .flatpickr-time input, .flatpickr-time .flatpickr-am-pm { color: var(--text-bright) !important; background: transparent !important; }
+    .flatpickr-time input:hover, .flatpickr-time .flatpickr-am-pm:hover { background: var(--surface4) !important; }
+    .numInputWrapper span { border-color: var(--border2) !important; }
+    .numInputWrapper span svg path { fill: var(--text-muted) !important; }
+    .flatpickr-prev-month svg, .flatpickr-next-month svg { fill: var(--text-muted) !important; }
+    .flatpickr-prev-month:hover svg, .flatpickr-next-month:hover svg { fill: var(--text-bright) !important; }
+
+    .date-input-wrap { position: relative; }
+    .date-input-wrap .cal-icon {
+        position: absolute; right: 10px; top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted); pointer-events: none;
+        width: 14px; height: 14px;
+    }
+    .date-input-wrap .form-control { padding-right: 32px; cursor: pointer; }
+</style>
+@endpush
+
 @section('content')
 <div class="page-header">
     <div><h1>Training Programs</h1><div class="bc">Admin / Training</div></div>
@@ -64,17 +103,44 @@
                     </button>
                 </td>
             </tr>
+
             {{-- Edit Modal --}}
             <div class="modal-backdrop" id="edit-prog-{{ $prog->id }}">
                 <div class="modal">
-                    <div class="modal-header"><h3>Edit Program</h3><button class="modal-close" onclick="closeModal('edit-prog-{{ $prog->id }}')"><i data-lucide="x" style="width:16px;height:16px"></i></button></div>
+                    <div class="modal-header">
+                        <h3>Edit Program</h3>
+                        <button class="modal-close" onclick="closeModal('edit-prog-{{ $prog->id }}')">
+                            <i data-lucide="x" style="width:16px;height:16px"></i>
+                        </button>
+                    </div>
                     <div class="modal-body">
                         <form method="POST" action="{{ route('admin.training.update', $prog) }}">
                             @csrf @method('PUT')
-                            <div class="form-group"><label>Title</label><input type="text" name="title" value="{{ $prog->title }}" class="form-control" required></div>
+                            <div class="form-group">
+                                <label>Title</label>
+                                <input type="text" name="title" value="{{ $prog->title }}" class="form-control" required>
+                            </div>
                             <div class="form-row">
-                                <div class="form-group"><label>Scheduled Date</label><input type="datetime-local" name="date_scheduled" value="{{ $prog->date_scheduled?->format('Y-m-d\TH:i') }}" class="form-control"></div>
-                                <div class="form-group"><label>Location</label><input type="text" name="location" value="{{ $prog->location }}" class="form-control"></div>
+                                <div class="form-group">
+                                    <label>Scheduled Date</label>
+                                    <div class="date-input-wrap">
+                                        <input type="text"
+                                               id="edit-date-{{ $prog->id }}"
+                                               class="form-control flatpickr-edit"
+                                               placeholder="Select date and time…"
+                                               value="{{ $prog->date_scheduled?->format('M d, Y H:i') }}"
+                                               readonly>
+                                        <input type="hidden"
+                                               name="date_scheduled"
+                                               id="edit-date-val-{{ $prog->id }}"
+                                               value="{{ $prog->date_scheduled?->format('Y-m-d H:i') }}">
+                                        <i data-lucide="calendar" class="cal-icon"></i>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Location</label>
+                                    <input type="text" name="location" value="{{ $prog->location }}" class="form-control">
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label>Status</label>
@@ -84,7 +150,9 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <button type="submit" class="btn btn-primary"><i data-lucide="save" style="width:14px;height:14px"></i> Save</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i data-lucide="save" style="width:14px;height:14px"></i> Save
+                            </button>
                         </form>
                     </div>
                 </div>
@@ -101,12 +169,23 @@
 {{-- Add Training Modal --}}
 <div class="modal-backdrop" id="modal-add-training">
     <div class="modal">
-        <div class="modal-header"><h3>Add Training Program</h3><button class="modal-close" onclick="closeModal('modal-add-training')"><i data-lucide="x" style="width:16px;height:16px"></i></button></div>
+        <div class="modal-header">
+            <h3>Add Training Program</h3>
+            <button class="modal-close" onclick="closeModal('modal-add-training')">
+                <i data-lucide="x" style="width:16px;height:16px"></i>
+            </button>
+        </div>
         <div class="modal-body">
             <form method="POST" action="{{ route('admin.training.store') }}">
                 @csrf
-                <div class="form-group"><label>Program Title *</label><input type="text" name="title" class="form-control" required></div>
-                <div class="form-group"><label>Description</label><textarea name="description" class="form-control" rows="2"></textarea></div>
+                <div class="form-group">
+                    <label>Program Title *</label>
+                    <input type="text" name="title" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" class="form-control" rows="2"></textarea>
+                </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label>Type *</label>
@@ -126,22 +205,82 @@
                     </div>
                 </div>
                 <div class="form-row">
-                    <div class="form-group"><label>Scheduled Date</label><input type="datetime-local" name="date_scheduled" class="form-control"></div>
-                    <div class="form-group"><label>Max Participants *</label><input type="number" name="max_participants" value="20" class="form-control" min="1" required></div>
+                    <div class="form-group">
+                        <label>Scheduled Date</label>
+                        <div class="date-input-wrap">
+                            <input type="text" id="add-date-show" class="form-control"
+                                   placeholder="Select date and time…" readonly>
+                            <input type="hidden" name="date_scheduled" id="add-date-val">
+                            <i data-lucide="calendar" class="cal-icon"></i>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Max Participants *</label>
+                        <input type="number" name="max_participants" value="20" class="form-control" min="1" required>
+                    </div>
                 </div>
                 <div class="form-row">
-                    <div class="form-group"><label>Location</label><input type="text" name="location" class="form-control"></div>
+                    <div class="form-group">
+                        <label>Location</label>
+                        <input type="text" name="location" class="form-control">
+                    </div>
                     <div class="form-group">
                         <label>Trainer</label>
                         <select name="trainer_id" class="form-control">
                             <option value="">— None —</option>
-                            @foreach($trainers as $t)<option value="{{ $t->id }}">{{ $t->name }}</option>@endforeach
+                            @foreach($trainers as $t)
+                            <option value="{{ $t->id }}">{{ $t->name }}</option>
+                            @endforeach
                         </select>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary"><i data-lucide="plus" style="width:14px;height:14px"></i> Create Program</button>
+                <button type="submit" class="btn btn-primary">
+                    <i data-lucide="plus" style="width:14px;height:14px"></i> Create Program
+                </button>
             </form>
         </div>
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+// Shared flatpickr config
+const fpConfig = {
+    enableTime: true,
+    dateFormat: 'M d, Y H:i',
+    time_24hr: true,
+    disableMobile: true,
+};
+
+function makePicker(displayId, hiddenId, appendToId, defaultVal) {
+    flatpickr('#' + displayId, {
+        ...fpConfig,
+        defaultDate: defaultVal || null,
+        appendTo: appendToId ? document.getElementById(appendToId) : undefined,
+        onChange: function(selectedDates) {
+            if (selectedDates.length) {
+                const d = selectedDates[0];
+                const pad = n => String(n).padStart(2, '0');
+                document.getElementById(hiddenId).value =
+                    `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+            }
+        }
+    });
+}
+
+// Add modal picker
+makePicker('add-date-show', 'add-date-val', 'modal-add-training');
+
+// Edit modal pickers — one per program
+@foreach($programs as $prog)
+makePicker(
+    'edit-date-{{ $prog->id }}',
+    'edit-date-val-{{ $prog->id }}',
+    'edit-prog-{{ $prog->id }}',
+    '{{ $prog->date_scheduled?->format('M d, Y H:i') ?? '' }}'
+);
+@endforeach
+</script>
+@endpush

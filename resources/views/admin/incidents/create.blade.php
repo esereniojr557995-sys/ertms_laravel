@@ -27,7 +27,7 @@
 
 @section('content')
 <div class="page-header">
-    <div><h1>New Incident</h1><div class="breadcrumb">Admin / Incidents / Create</div></div>
+    <div><h1>New Incident</h1><div class="bc">Admin / Incidents / Create</div></div>
     <a href="{{ route('admin.incidents') }}" class="btn btn-secondary"><i data-lucide="arrow-left" style="width:14px;height:14px"></i> Back</a>
 </div>
 
