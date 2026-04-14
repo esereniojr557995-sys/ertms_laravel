@@ -46,11 +46,11 @@ return [
             'prefix_indexes' => true,
             'strict'         => true,
             'engine'         => null,
-            // SSL for Clever Cloud external connections (PHP 8.2 compatible)
-            'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA                    => '/etc/ssl/certs/ca-certificates.crt',
-                PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT    => false,
-            ]) : [],
+            // Fix: removed array_filter() — it was stripping the false value
+            'options' => extension_loaded('pdo_mysql') ? [
+                PDO::MYSQL_ATTR_SSL_CA                 => '/etc/ssl/certs/ca-certificates.crt',
+                PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,
+            ] : [],
         ],
 
         'mariadb' => [
@@ -108,7 +108,7 @@ return [
     */
 
     'migrations' => [
-        'table'                => 'migrations',
+        'table'                  => 'migrations',
         'update_date_on_publish' => true,
     ],
 
