@@ -45,6 +45,10 @@ WORKDIR /var/www/html
 # Copy full Laravel app
 COPY . .
 
+# Create required directories BEFORE composer install
+RUN mkdir -p bootstrap/cache storage/framework/cache storage/framework/sessions storage/framework/views \
+    && chmod -R 775 bootstrap/cache storage
+
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
@@ -53,9 +57,9 @@ RUN npm install
 RUN npm run build
 
 # Set permissions
-RUN mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views bootstrap/cache public/uploads \
-&& chown -R www-data:www-data storage bootstrap/cache public/uploads \
-&& chmod -R 775 storage bootstrap/cache public/uploads
+RUN mkdir -p public/uploads \
+    && chown -R www-data:www-data storage bootstrap/cache public/uploads \
+    && chmod -R 775 storage bootstrap/cache public/uploads
 
 # Copy startup script (runs migrations + starts Apache)
 COPY start.sh /start.sh
@@ -63,5 +67,4 @@ RUN chmod +x /start.sh
 
 EXPOSE 10000
 
-# Use startup script instead of apache2-foreground directly
 CMD ["/start.sh"]
