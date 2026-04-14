@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="page-header">
-    <div><h1>Report an Incident</h1><div class="breadcrumb">Citizen / Portal</div></div>
+    <div><h1>Report an Incident</h1><div class="bc">Citizen / Portal</div></div>
 </div>
 
 <div class="grid-2" style="align-items:start">

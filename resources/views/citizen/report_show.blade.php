@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="page-header">
-    <div><h1>Report Detail</h1><div class="breadcrumb">Citizen / Portal / Detail</div></div>
+    <div><h1>Report Detail</h1><div class="bc">Citizen / Portal / Detail</div></div>
     <a href="{{ route('citizen.portal') }}" class="btn btn-secondary"><i data-lucide="arrow-left" style="width:14px;height:14px"></i> Back</a>
 </div>
 

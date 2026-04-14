@@ -10,7 +10,7 @@
 
 @section('content')
 <div class="page-header">
-    <div><h1>Evacuation Map</h1><div class="breadcrumb">Citizen / Map</div></div>
+    <div><h1>Evacuation Map</h1><div class="bc">Citizen / Map</div></div>
 </div>
 
 <div style="background:rgba(56,139,253,.08);border:1px solid rgba(56,139,253,.25);border-radius:8px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px">
