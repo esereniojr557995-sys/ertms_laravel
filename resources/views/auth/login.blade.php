@@ -159,14 +159,6 @@
                         <i data-lucide="log-in"></i> Sign In to ERTMS
                     </button>
                 </form>
-
-                <div class="demo-panel">
-                    <div class="dp-title">Demo Accounts — password: password</div>
-                    <div class="demo-row"><span class="role">Admin</span><span class="email">admin@ertms.gov</span></div>
-                    <div class="demo-row"><span class="role">Commander</span><span class="email">commander@ertms.gov</span></div>
-                    <div class="demo-row"><span class="role">Responder</span><span class="email">responder@ertms.gov</span></div>
-                    <div class="demo-row"><span class="role">Citizen</span><span class="email">citizen@ertms.gov</span></div>
-                </div>
             </div>
 
             {{-- ── REGISTER PANEL ─────────────────────────────────── --}}
