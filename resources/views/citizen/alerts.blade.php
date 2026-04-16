@@ -9,36 +9,31 @@
 </div>
 
 <div class="card">
-    <div class="table-wrap">
-        <table>
-            <thead><tr><th>Alert</th><th>Type</th><th>Severity</th><th>Issued</th></tr></thead>
-            <tbody>
-            @forelse($alerts as $alert)
-            <tr>
-                <td>
-                    <div style="display:flex;align-items:flex-start;gap:10px">
-                        <div class="alert-dot {{ $alert->severity }}" style="margin-top:5px;flex-shrink:0"></div>
-                        <div>
-                            <div style="font-weight:600;font-size:.85rem">{{ $alert->title }}</div>
-                            <div style="font-size:.78rem;color:var(--text-muted);margin-top:4px;line-height:1.5;max-width:480px">{{ $alert->message }}</div>
-                        </div>
-                    </div>
-                </td>
-                <td><span class="badge badge-info" style="text-transform:capitalize">{{ $alert->type }}</span></td>
-                <td>
+    {{-- Mobile: card list. Desktop: table --}}
+    @forelse($alerts as $alert)
+    <div style="padding:14px 16px;border-bottom:1px solid rgba(23,32,48,.8)">
+        <div style="display:flex;align-items:flex-start;gap:10px">
+            <div class="alert-dot {{ $alert->severity }}" style="margin-top:6px;flex-shrink:0"></div>
+            <div style="flex:1;min-width:0">
+                <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:4px">
+                    <span style="font-weight:600;font-size:.88rem;color:var(--text-bright)">{{ $alert->title }}</span>
                     <span class="badge badge-{{ $alert->severity }}">{{ $alert->severity }}</span>
-                </td>
-                <td style="font-size:.75rem;color:var(--text-muted)">
-                    {{ $alert->created_at->format('M d, Y H:i') }}<br>
-                    <span style="font-size:.7rem">{{ $alert->created_at->diffForHumans() }}</span>
-                </td>
-            </tr>
-            @empty
-            <tr><td colspan="4"><div class="empty-state"><i data-lucide="bell-off"></i><p>No alerts issued.</p></div></td></tr>
-            @endforelse
-            </tbody>
-        </table>
+                </div>
+                <div style="font-size:.8rem;color:var(--text);line-height:1.55;margin-bottom:6px">{{ $alert->message }}</div>
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                    <span class="badge badge-info" style="text-transform:capitalize">{{ $alert->type }}</span>
+                    <span style="font-size:.72rem;color:var(--text-muted)">{{ $alert->created_at->format('M d, Y H:i') }}</span>
+                    <span style="font-size:.72rem;color:var(--text-dim)">{{ $alert->created_at->diffForHumans() }}</span>
+                </div>
+            </div>
+        </div>
     </div>
+    @empty
+    <div class="empty-state" style="padding:40px">
+        <i data-lucide="bell-off"></i>
+        <p>No alerts issued.</p>
+    </div>
+    @endforelse
     <div style="padding:16px 20px">{{ $alerts->links('vendor.pagination.custom') }}</div>
 </div>
 @endsection
