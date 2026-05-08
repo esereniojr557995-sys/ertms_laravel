@@ -151,4 +151,5 @@ Route::prefix('citizen')->name('citizen.')->middleware(['auth','role:citizen'])-
     Route::get('/portal/{report}', [CitizenController::class, 'showReport'])->name('portal.show');
 
     Route::put('/portal/{report}/cancel', [CitizenController::class, 'cancelReport'])->name('portal.cancel');
+    
 });
