@@ -27,60 +27,124 @@
 @section('content')
 <div class="page-header">
     <div><h1>Edit Incident</h1><div class="bc">Admin / Incidents / Edit</div></div>
-    <a href="{{ route('admin.incidents') }}" class="btn btn-secondary"><i data-lucide="arrow-left" style="width:14px;height:14px"></i> Back</a>
+    <a href="{{ route('admin.incidents') }}" class="btn btn-secondary">
+        <i data-lucide="arrow-left" style="width:14px;height:14px"></i> Back
+    </a>
 </div>
+
+{{-- ── LOCKED BANNER ───────────────────────────────────────────────── --}}
+@if($incident->status === 'closed')
+<div style="display:flex;align-items:center;gap:10px;background:#3a1a1a;border:1px solid #c0392b;
+            color:#e74c3c;padding:14px 18px;border-radius:8px;margin-bottom:20px;max-width:720px">
+    <i data-lucide="lock" style="width:18px;height:18px;flex-shrink:0"></i>
+    <span><strong>This incident is closed and locked.</strong> Closed incidents cannot be edited.</span>
+</div>
+@endif
+
 <div class="card" style="max-width:720px">
     <div class="card-body">
         <form method="POST" action="{{ route('admin.incidents.update', $incident) }}">
             @csrf @method('PUT')
-            <div class="form-group"><label>Incident Title *</label><input type="text" name="title" value="{{ old('title',$incident->title) }}" class="form-control" required></div>
-            <div class="form-row">
+
+            {{-- All fields are disabled when closed --}}
+            <fieldset @if($incident->status === 'closed') disabled @endif>
+
                 <div class="form-group">
-                    <label>Type *</label>
-                    <select name="type" class="form-control" required>
-                        @foreach(['fire','flood','earthquake','medical','rescue','hazmat','wind','other'] as $t)
-                        <option value="{{ $t }}" {{ old('type',$incident->type)==$t?'selected':'' }}>{{ ucfirst($t) }}</option>
-                        @endforeach
-                    </select>
+                    <label>Incident Title *</label>
+                    <input type="text" name="title" value="{{ old('title', $incident->title) }}"
+                           class="form-control" required>
                 </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Type *</label>
+                        <select name="type" class="form-control" required>
+                            @foreach(['fire','flood','earthquake','medical','rescue','hazmat','wind','other'] as $t)
+                            <option value="{{ $t }}" {{ old('type', $incident->type) == $t ? 'selected' : '' }}>
+                                {{ ucfirst($t) }}
+                            </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Severity *</label>
+                        <select name="severity" class="form-control" required>
+                            @foreach(['low','moderate','high','critical'] as $s)
+                            <option value="{{ $s }}" {{ old('severity', $incident->severity) == $s ? 'selected' : '' }}>
+                                {{ ucfirst($s) }}
+                            </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
                 <div class="form-group">
-                    <label>Severity *</label>
-                    <select name="severity" class="form-control" required>
-                        @foreach(['low','moderate','high','critical'] as $s)
-                        <option value="{{ $s }}" {{ old('severity',$incident->severity)==$s?'selected':'' }}>{{ ucfirst($s) }}</option>
-                        @endforeach
-                    </select>
+                    <label>Location *</label>
+                    <input type="text" name="location" value="{{ old('location', $incident->location) }}"
+                           class="form-control" required>
                 </div>
-            </div>
-            <div class="form-group"><label>Location *</label><input type="text" name="location" value="{{ old('location',$incident->location) }}" class="form-control" required></div>
-            <div class="form-row">
-                <div class="form-group"><label>Latitude</label><input type="number" step="0.0000001" name="latitude" value="{{ old('latitude',$incident->latitude) }}" class="form-control"></div>
-                <div class="form-group"><label>Longitude</label><input type="number" step="0.0000001" name="longitude" value="{{ old('longitude',$incident->longitude) }}" class="form-control"></div>
-            </div>
-            <div class="form-row">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Latitude</label>
+                        <input type="number" step="0.0000001" name="latitude"
+                               value="{{ old('latitude', $incident->latitude) }}" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Longitude</label>
+                        <input type="number" step="0.0000001" name="longitude"
+                               value="{{ old('longitude', $incident->longitude) }}" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Status *</label>
+                        <select name="status" class="form-control" required>
+                            @foreach(['open','active','contained','closed'] as $s)
+                            <option value="{{ $s }}" {{ old('status', $incident->status) == $s ? 'selected' : '' }}>
+                                {{ ucfirst($s) }}
+                            </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Commander</label>
+                        <select name="commander_id" class="form-control">
+                            <option value="">— Unassigned —</option>
+                            @foreach($commanders as $c)
+                            <option value="{{ $c->id }}"
+                                {{ old('commander_id', $incident->commander_id) == $c->id ? 'selected' : '' }}>
+                                {{ $c->name }}
+                            </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
                 <div class="form-group">
-                    <label>Status *</label>
-                    <select name="status" class="form-control" required>
-                        @foreach(['open','active','contained','closed'] as $s)
-                        <option value="{{ $s }}" {{ old('status',$incident->status)==$s?'selected':'' }}>{{ ucfirst($s) }}</option>
-                        @endforeach
-                    </select>
+                    <label>Description</label>
+                    <textarea name="description" class="form-control" rows="4">
+                        {{ old('description', $incident->description) }}
+                    </textarea>
                 </div>
-                <div class="form-group">
-                    <label>Commander</label>
-                    <select name="commander_id" class="form-control">
-                        <option value="">— Unassigned —</option>
-                        @foreach($commanders as $c)
-                        <option value="{{ $c->id }}" {{ old('commander_id',$incident->commander_id)==$c->id?'selected':'' }}>{{ $c->name }}</option>
-                        @endforeach
-                    </select>
+
+                @if($incident->status !== 'closed')
+                <div style="display:flex;gap:10px;margin-top:8px">
+                    <button type="submit" class="btn btn-primary">
+                        <i data-lucide="save" style="width:14px;height:14px"></i> Update Incident
+                    </button>
+                    <a href="{{ route('admin.incidents') }}" class="btn btn-secondary">Cancel</a>
                 </div>
-            </div>
-            <div class="form-group"><label>Description</label><textarea name="description" class="form-control" rows="4">{{ old('description',$incident->description) }}</textarea></div>
-            <div style="display:flex;gap:10px;margin-top:8px">
-                <button type="submit" class="btn btn-primary"><i data-lucide="save" style="width:14px;height:14px"></i> Update Incident</button>
-                <a href="{{ route('admin.incidents') }}" class="btn btn-secondary">Cancel</a>
-            </div>
+                @else
+                <div style="margin-top:8px">
+                    <a href="{{ route('admin.incidents') }}" class="btn btn-secondary">
+                        <i data-lucide="arrow-left" style="width:14px;height:14px"></i> Back to Incidents
+                    </a>
+                </div>
+                @endif
+
+            </fieldset>
         </form>
     </div>
 </div>

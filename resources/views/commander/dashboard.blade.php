@@ -107,7 +107,10 @@
                 <div style="width:6px;height:6px;border-radius:50%;margin-top:6px;flex-shrink:0;background:{{ $task->priority==='critical'?'var(--red)':($task->priority==='high'?'var(--accent)':($task->priority==='medium'?'var(--yellow)':'var(--green)')) }}"></div>
                 <div style="flex:1;min-width:0">
                     <div style="font-weight:600;font-size:.8rem;color:var(--text-bright)">{{ $task->title }}</div>
-                    <div style="font-size:.7rem;color:var(--text-muted);margin-top:1px">{{ $task->incident->title }}</div>
+                    {{-- FIX: use ?-> so a deleted/missing incident doesn't crash the page --}}
+                    <div style="font-size:.7rem;color:var(--text-muted);margin-top:1px">
+                        {{ $task->incident?->title ?? '— Incident removed —' }}
+                    </div>
                     @if($task->due_datetime)
                     <div style="font-size:.68rem;color:var(--accent2);margin-top:3px;display:flex;align-items:center;gap:3px">
                         <i data-lucide="clock" style="width:10px;height:10px"></i>

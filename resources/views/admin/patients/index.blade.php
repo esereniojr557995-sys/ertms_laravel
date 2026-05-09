@@ -47,7 +47,6 @@
     @foreach(['immediate','delayed','minor','expectant','deceased'] as $tl)
     <div class="stat-card {{ $triageColors[$tl] ?? '' }}">
         <div class="sc-label">{{ ucfirst($tl) }}</div>
-        {{-- FIX: use ->get($tl) instead of [$tl] to safely access a Collection --}}
         <div class="sc-val" style="font-size:1.6rem">{{ $triageCounts->get($tl)?->count() ?? 0 }}</div>
     </div>
     @endforeach
@@ -76,20 +75,35 @@
                     <div style="font-size:.72rem;color:var(--text-muted)">{{ $p->age ? $p->age.' yrs' : 'Age unknown' }} · {{ $p->gender }}</div>
                 </td>
                 <td><span class="badge badge-{{ $p->triage_level }}">{{ $p->triage_level }}</span></td>
-                <td style="font-size:.78rem;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ $p->incident->title }}</td>
+                {{-- FIX: use ?-> so a deleted/missing incident doesn't crash the page --}}
+                <td style="font-size:.78rem;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                    {{ $p->incident?->title ?? '— Incident removed —' }}
+                </td>
                 <td style="font-size:.78rem">{{ $p->medic?->name ?? '—' }}</td>
                 <td style="font-size:.78rem;color:var(--text-muted)">{{ $p->hospital_name ?? '—' }}</td>
                 <td><span class="badge badge-{{ in_array($p->status,['admitted','discharged']) ? 'completed' : ($p->status=='on_scene'?'active':'in_progress') }}">{{ str_replace('_',' ',$p->status) }}</span></td>
                 <td>
-                    <button class="btn btn-secondary btn-xs" onclick="openModal('edit-pat-{{ $p->id }}')">
-                        <i data-lucide="pencil" style="width:12px;height:12px"></i> Update
-                    </button>
+                    @if(in_array($p->status, ['discharged', 'deceased']))
+                        {{-- LOCK: discharged/deceased patients show a locked badge instead of Update button --}}
+                        <span class="badge" style="background:var(--bg-card);color:var(--text-muted);border:1px solid var(--border)">
+                            <i data-lucide="lock" style="width:11px;height:11px"></i> Locked
+                        </span>
+                    @else
+                        <button class="btn btn-secondary btn-xs" onclick="openModal('edit-pat-{{ $p->id }}')">
+                            <i data-lucide="pencil" style="width:12px;height:12px"></i> Update
+                        </button>
+                    @endif
                 </td>
             </tr>
             {{-- Edit Patient Modal --}}
             <div class="modal-backdrop" id="edit-pat-{{ $p->id }}">
                 <div class="modal">
-                    <div class="modal-header"><h3>Update: {{ $p->name }}</h3><button class="modal-close" onclick="closeModal('edit-pat-{{ $p->id }}')"><i data-lucide="x" style="width:16px;height:16px"></i></button></div>
+                    <div class="modal-header">
+                        <h3>Update: {{ $p->name }}</h3>
+                        <button class="modal-close" onclick="closeModal('edit-pat-{{ $p->id }}')">
+                            <i data-lucide="x" style="width:16px;height:16px"></i>
+                        </button>
+                    </div>
                     <div class="modal-body">
                         <form method="POST" action="{{ route('admin.patients.update',$p) }}">
                             @csrf @method('PUT')
@@ -121,10 +135,18 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="form-group"><label>Hospital</label><input type="text" name="hospital_name" value="{{ $p->hospital_name }}" class="form-control" placeholder="Hospital name"></div>
+                                <div class="form-group">
+                                    <label>Hospital</label>
+                                    <input type="text" name="hospital_name" value="{{ $p->hospital_name }}" class="form-control" placeholder="Hospital name">
+                                </div>
                             </div>
-                            <div class="form-group"><label>Notes</label><textarea name="notes" class="form-control" rows="2">{{ $p->notes }}</textarea></div>
-                            <button type="submit" class="btn btn-primary"><i data-lucide="save" style="width:14px;height:14px"></i> Save Changes</button>
+                            <div class="form-group">
+                                <label>Notes</label>
+                                <textarea name="notes" class="form-control" rows="2">{{ $p->notes }}</textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i data-lucide="save" style="width:14px;height:14px"></i> Save Changes
+                            </button>
                         </form>
                     </div>
                 </div>
@@ -141,7 +163,12 @@
 {{-- Add Patient Modal --}}
 <div class="modal-backdrop" id="modal-add-patient">
     <div class="modal">
-        <div class="modal-header"><h3>Add Patient Record</h3><button class="modal-close" onclick="closeModal('modal-add-patient')"><i data-lucide="x" style="width:16px;height:16px"></i></button></div>
+        <div class="modal-header">
+            <h3>Add Patient Record</h3>
+            <button class="modal-close" onclick="closeModal('modal-add-patient')">
+                <i data-lucide="x" style="width:16px;height:16px"></i>
+            </button>
+        </div>
         <div class="modal-body">
             <form method="POST" action="{{ route('admin.patients.store') }}">
                 @csrf
@@ -152,7 +179,11 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>Gender *</label>
-                        <select name="gender" class="form-control"><option value="male">Male</option><option value="female">Female</option><option value="unknown">Unknown</option></select>
+                        <select name="gender" class="form-control">
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="unknown">Unknown</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label>Triage Level *</label>
@@ -168,7 +199,9 @@
                         <label>Incident *</label>
                         <select name="incident_id" class="form-control" required>
                             <option value="">— Select —</option>
-                            @foreach($incidents as $inc)<option value="{{ $inc->id }}">{{ $inc->title }}</option>@endforeach
+                            @foreach($incidents as $inc)
+                            <option value="{{ $inc->id }}">{{ $inc->title }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="form-group">
@@ -183,7 +216,9 @@
                 <div class="form-group"><label>Location Found</label><input type="text" name="location_found" class="form-control"></div>
                 <div class="form-group"><label>Hospital Name</label><input type="text" name="hospital_name" class="form-control"></div>
                 <div class="form-group"><label>Notes</label><textarea name="notes" class="form-control" rows="2"></textarea></div>
-                <button type="submit" class="btn btn-primary"><i data-lucide="user-plus" style="width:14px;height:14px"></i> Add Patient</button>
+                <button type="submit" class="btn btn-primary">
+                    <i data-lucide="user-plus" style="width:14px;height:14px"></i> Add Patient
+                </button>
             </form>
         </div>
     </div>

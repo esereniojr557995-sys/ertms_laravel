@@ -208,12 +208,24 @@ class AdminController extends Controller
 
     public function editIncident(Incident $incident)
     {
+        // ── LOCK: redirect away if incident is already closed ──────────────
+        if ($incident->status === 'closed') {
+            return redirect()->route('admin.incidents')
+                ->with('error', 'This incident is closed and cannot be edited.');
+        }
+
         $commanders = User::where('role','commander')->get();
         return view('admin.incidents.edit', compact('incident','commanders'));
     }
 
     public function updateIncident(Request $request, Incident $incident)
     {
+        // ── LOCK: block any POST/PUT attempt on a closed incident ──────────
+        if ($incident->status === 'closed') {
+            return redirect()->route('admin.incidents')
+                ->with('error', 'This incident is closed and cannot be edited.');
+        }
+
         $data = $request->validate([
             'title'        => 'required|string|max:150',
             'type'         => 'required',
@@ -225,9 +237,12 @@ class AdminController extends Controller
             'status'       => 'required|in:open,active,contained,closed',
             'commander_id' => 'nullable|exists:users,id',
         ]);
+
+        // Auto-stamp the closing date when status is set to closed
         if ($data['status'] === 'closed' && !$incident->date_closed) {
             $data['date_closed'] = now();
         }
+
         $incident->update($data);
         $this->logActivity('UPDATE','Incidents',$incident->id,"Updated incident: {$incident->title}");
         return redirect()->route('admin.incidents')->with('success','Incident updated.');
