@@ -108,8 +108,7 @@
                 <div style="flex:1;min-width:0">
                     <div style="font-weight:600;font-size:.8rem;color:var(--text-bright)">{{ $task->title }}</div>
                     {{-- FIX: use ?-> so a deleted/missing incident doesn't crash the page --}}
-                    <div style="font-size:.7rem;color:var(--text-muted);margin-top:1px">
-                        {{ $task->incident?->title ?? '— Incident removed —' }}
+                   <div style="font-size:.7rem;color:var(--text-muted);margin-top:1px">{{ $task->incident?->title ?? '— Incident removed —' }}</div>
                     </div>
                     @if($task->due_datetime)
                     <div style="font-size:.68rem;color:var(--accent2);margin-top:3px;display:flex;align-items:center;gap:3px">

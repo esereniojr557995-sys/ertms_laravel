@@ -31,7 +31,10 @@
                     <div style="font-weight:600;font-size:.83rem">{{ $task->title }}</div>
                     @if($task->description)<div style="font-size:.72rem;color:var(--text-muted)">{{ Str::limit($task->description,60) }}</div>@endif
                 </td>
-                <td style="font-size:.78rem;color:var(--text-muted)">{{ $task->incident->title }}</td>
+                {{-- FIX: use ?-> so a deleted/missing incident doesn't crash the page --}}
+                <td style="font-size:.78rem;color:var(--text-muted)">
+                    {{ $task->incident?->title ?? '— Incident removed —' }}
+                </td>
                 <td>
                     <span class="badge badge-{{ $task->priority }}">{{ $task->priority }}</span>
                 </td>

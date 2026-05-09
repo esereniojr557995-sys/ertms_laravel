@@ -43,7 +43,8 @@
                 </td>
                 <td><span class="badge badge-{{ $p->triage_level }}">{{ $p->triage_level }}</span></td>
                 <td style="font-size:.78rem;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-muted)">
-                    {{ $p->incident->title }}
+        {{ $p->incident?->title ?? '— Incident removed —' }}
+    </td>
                 </td>
                 <td>
                     <span class="badge badge-{{
