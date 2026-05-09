@@ -44,7 +44,7 @@ class CitizenController extends Controller
         $data = $request->validate([
             'title'       => 'required|string|max:150',
             'description' => 'required|string',
-            'location'    => 'nullable|string|max:200',   // ← changed: optional
+            'location'    => 'nullable|string|max:200',
             'latitude'    => 'nullable|numeric',
             'longitude'   => 'nullable|numeric',
             'type'        => 'required|in:fire,flood,accident,medical,hazard,other',
@@ -54,6 +54,13 @@ class CitizenController extends Controller
         if ($request->hasFile('photo')) {
             $data['photo'] = $request->file('photo')->store('citizen_reports', 'public');
         }
+
+        // Ensure location is never null — fallback to coordinates or 'Unknown'
+        $data['location'] = !empty($data['location'])
+            ? $data['location']
+            : ((!empty($data['latitude']) && !empty($data['longitude']))
+                ? $data['latitude'] . ', ' . $data['longitude']
+                : 'Unknown');
 
         $data['user_id'] = auth()->id();
         $data['status']  = 'pending';
@@ -67,7 +74,6 @@ class CitizenController extends Controller
     // ── Cancel a pending report ────────────────────────────────────────────
     public function cancelReport(CitizenReport $report)
     {
-        // Only the owner can cancel, and only if still pending
         abort_unless($report->user_id === auth()->id(), 403);
 
         if ($report->status !== 'pending') {
